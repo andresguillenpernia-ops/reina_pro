@@ -80,27 +80,17 @@
 
         <!-- HEADER / NAVIGATION -->
         <header class="sticky top-0 z-30 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-4 py-3 flex items-center justify-between shadow-lg">
-            <div class="flex items-center space-x-3">
-                <button v-if="currentView !== 'list'" @click="currentView = 'list'" class="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition">
-                    <i class="fa-solid fa-arrow-left text-lg"></i>
-                </button>
-                <div class="flex items-center space-x-2">
-                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-400 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
-                        <i class="fa-solid fa-cross text-lg"></i>
-                    </div>
-                    <div>
-                        <h1 class="font-bold text-base tracking-tight leading-none text-white flex items-center gap-2">
-                            Reina <span class="text-brand-400 text-xs font-semibold px-1.5 py-0.5 bg-brand-500/20 rounded-full border border-brand-500/30">PRO</span>
-                        </h1>
-                        <p class="text-[11px] text-slate-400">Repertorio & Acordes Cloud</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex items-center space-x-2">
+                        <div class="flex items-center space-x-2">
                 <div v-if="connectionStatus" class="hidden sm:flex items-center mr-2 text-[10px] text-emerald-400 bg-emerald-950/50 px-2 py-1 rounded-md border border-emerald-900/50">
                     <i class="fa-solid fa-cloud-check mr-1"></i> Sincronizado
                 </div>
+                
+                <!-- BOTÓN DE GOOGLE -->
+                <button @click="loginWithGoogle" class="p-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 text-xs font-medium flex items-center space-x-1.5 transition">
+                    <i class="fa-brands fa-google text-amber-400"></i>
+                    <span>{{ userEmail ? 'Cuenta' : 'Conectar' }}</span>
+                </button>
+
                 <button @click="openSetlistModal" class="p-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 text-xs font-medium flex items-center space-x-1.5 transition">
                     <i class="fa-solid fa-list-check text-brand-400"></i>
                     <span class="hidden sm:inline">Repertorios</span>
