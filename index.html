@@ -601,29 +601,29 @@ Y can[F]taré de la bon[C]dad de Dios" class="w-full bg-slate-950 border border-
                 }
 
                 async function initFirebase() {
-                    try {
-                        const app = initializeApp(firebaseConfig);
-                        auth = getAuth(app);
-                        db = getFirestore(app);
+                try {
+                    const app = initializeApp(firebaseConfig);
+                    auth = getAuth(app);
+                    db = getFirestore(app);
 
-                        let user = null;
-                        if (initialAuthToken) {
-                            const cred = await signInWithCustomToken(auth, initialAuthToken);
-                            user = cred.user;
+                    // Escuchar cambios de estado de autenticación de forma persistente
+                    auth.onAuthStateChanged((user) => {
+                        if (user) {
+                            userId.value = user.uid;
+                            userEmail.value = user.email || null;
+                            setupFirestoreListeners();
                         } else {
-                            const cred = await signInAnonymously(auth);
-                            user = cred.user;
+                            // Si no hay usuario, iniciar sesión de forma anónima por defecto
+                            signInAnonymously(auth);
                         }
+                    });
 
-                        userId.value = user.uid;
-                        setupFirestoreListeners();
-                        
-                    } catch (e) {
-                        console.error("Error connecting to Firebase:", e);
-                        showToast("Error de conexión a la nube.");
-                        isLoading.value = false;
-                    }
+                } catch (e) {
+                    console.error("Error connecting to Firebase:", e);
+                    showToast("Error de conexión a la nube.");
+                    isLoading.value = false;
                 }
+            }
 
                 function setupFirestoreListeners() {
                     if (!userId.value) return;
