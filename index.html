@@ -80,7 +80,7 @@
 
         <!-- HEADER / NAVIGATION -->
         <header class="sticky top-0 z-30 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-4 py-3 flex items-center justify-between shadow-lg">
-                     <div @click="activeSong = null" class="flex items-center space-x-3 cursor-pointer group select-none">
+                     <div @click="volverAlHome" class="flex items-center space-x-3 cursor-pointer group select-none">
                     <!-- Icono dinámico: Muestra una flecha si hay canción abierta, o la 'R' si estás en el Home -->
                     <div class="w-8 h-8 bg-brand-600 group-hover:bg-brand-500 rounded-lg flex items-center justify-center font-bold text-white shadow-md shadow-brand-600/20 transition">
                         <i v-if="activeSong" class="fa-solid fa-arrow-left text-xs animate-pulse"></i>
