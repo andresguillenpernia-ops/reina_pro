@@ -653,14 +653,18 @@ Y can[F]taré de la bon[C]dad de Dios" class="w-full bg-slate-950 border border-
                     isLoading.value = false;
                 }
             }
-               function volverAlHome() {
-                // Forzamos a la app a regresar a la vista del catálogo principal
-                if (currentView) currentView.value = 'repertoire';
+              function volverAlHome() {
+                // 1. Corregimos el nombre de la vista a 'list' (el catálogo real de tu app)
+                if (currentView) currentView.value = 'list';
                 
-                // Limpiamos la canción que estaba abierta y los buscadores
+                // 2. Limpiamos la canción activa y restablecemos los buscadores
                 activeSong.value = null;
                 searchQuery.value = '';
-                if (selectedCategoryFilter) selectedCategoryFilter.value = 'Todos';
+                
+                // 3. Forzamos a que el filtro de categorías regrese a 'Todos' (vacío en tu código)
+                if (selectedCategoryFilter) selectedCategoryFilter.value = '';
+                
+                showToast("Regresando al repertorio principal");
             }
 
                 function setupFirestoreListeners() {
