@@ -607,16 +607,17 @@ Y can[F]taré de la bon[C]dad de Dios" class="w-full bg-slate-950 border border-
                     db = getFirestore(app);
 
                     // Escuchar cambios de estado de autenticación de forma persistente
-                            auth.onAuthStateChanged((user) => {
-                                if (user) {
-                                    // CAMBIO AQUÍ: Forzamos a que todos compartan la carpeta 'repartido'
-                                    userId.value = 'repartido'; 
-                                    userEmail.value = user.email || null;
-                                    setupFirestoreListeners();
-                                } else {
-                                    signInAnonymously(auth);
-                                }
-                            });
+                        auth.onAuthStateChanged((user) => {
+                            if (user) {
+                                // Forzamos a que todo el equipo comparta la carpeta central 'equipo_reina'
+                                userId.value = 'equipo_reina';
+                                userEmail.value = user.email || null;
+                                setupFirestoreListeners();
+                            } else {
+                                // Si no hay usuario, iniciar sesión de forma anónima por defecto
+                                signInAnonymously(auth);
+                            }
+                        });
 
                 } catch (e) {
                     console.error("Error connecting to Firebase:", e);
