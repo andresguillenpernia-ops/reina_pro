@@ -518,7 +518,15 @@ Y can[F]taré de la bon[C]dad de Dios" class="w-full bg-slate-950 border border-
 
         // Global variables securely provided by the immersive platform
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'reina-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const firebaseConfig = {
+              apiKey: "AIzaSyB3aFWsjqpu1ABXTWF84FXTMv3nmvtf7jM",
+              authDomain: "reinapro-3a02c.firebaseapp.com",
+              projectId: "reinapro-3a02c",
+              storageBucket: "reinapro-3a02c.firebasestorage.app",
+              messagingSenderId: "596609427064",
+              appId: "1:596609427064:web:ca9c4c376bd9dab7d16f8d",
+              measurementId: "G-MVVHKN14NJ"
+            };
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
         const { createApp, ref, computed, onMounted, watch } = Vue;
