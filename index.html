@@ -525,6 +525,7 @@ Y can[F]taré de la bon[C]dad de Dios" class="w-full bg-slate-950 border border-
             setup() {
                 // Main States
                 const isLoading = ref(true);
+                const userEmail = ref(null);
                 const connectionStatus = ref(false);
                 const currentView = ref('list'); // 'list' | 'song'
                 const searchQuery = ref('');
