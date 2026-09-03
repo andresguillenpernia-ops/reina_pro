@@ -655,10 +655,10 @@ Y can[F]taré de la bon[C]dad de Dios" class="w-full bg-slate-950 border border-
             }
                 function volverAlHome() {
                 activeSong.value = null;
-                // Si usas un filtro o búsqueda activa, la restablecemos al estado por defecto
-                if (typeof currentType !== 'undefined') currentType.value = 'Todos';
-                if (typeof searchQuery !== 'undefined') searchQuery.value = '';
-                showToast("Regresando al repertorio principal");
+                searchQuery.value = '';
+                if (typeof selectedCategoryFilter !== 'undefined' && selectedCategoryFilter) {
+                    selectedCategoryFilter.value = 'Todos';
+                }
             }
 
                 function setupFirestoreListeners() {
