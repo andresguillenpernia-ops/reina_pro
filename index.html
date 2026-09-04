@@ -699,6 +699,16 @@ Y can[F]taré de la bon[C]dad de Dios" class="w-full bg-slate-950 border border-
                         isFirstLoad = false;
                         isLoading.value = false;
                         connectionStatus.value = true;
+
+                        // NUEVO: Cerramos el logo grande tras 2 segundos para mostrar el spinner original
+                        setTimeout(() => {
+                            const splash = document.getElementById('splash-screen');
+                            if (splash) {
+                                splash.style.opacity = '0';
+                                setTimeout(() => splash.remove(), 500);
+                            }
+                        }, 2000);
+
                     }, (error) => {
                         console.error("Error on songs snapshot", error);
                         isLoading.value = false;
