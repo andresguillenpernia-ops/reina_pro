@@ -15,6 +15,6 @@
     ],
     "theme_color": "#0b0813",
     "background_color": "#0b0813",
-    "display": "standalone",
+    "display": "browser",
     "start_url": "/reina_pro/"
 }
