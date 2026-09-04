@@ -68,7 +68,12 @@
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-brand-500 selection:text-white">
-        
+    
+        <!-- 1. Contenedor del Logo Fijo sin animación de parpadeo -->
+        <div id="splash-screen" style="position: fixed; inset: 0; z-index: 99999; display: flex; align-items: center; justify-content: center; background-color: #0b0813; transition: opacity 0.5s ease;">
+          <img src="logo-reina.png" alt="Reina PRO Logo" style="width: 240px; height: auto;">
+        </div>
+    
     <div id="app" class="flex-1 flex flex-col max-w-5xl mx-auto w-full min-h-screen relative pb-20">
 
         <!-- Pantalla de carga inicial (Firebase Connect) -->
