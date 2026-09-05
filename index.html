@@ -96,7 +96,7 @@
                  <div @click="volverAlHome" class="flex items-center space-x-2 cursor-pointer group select-none">
                     <!-- Icono dinámico: Muestra una flecha si hay canción abierta, o tu logo estilizado sin deformarse -->
                     <div class="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-white transition shrink-0">
-                        <i v-if="activeSong" class="fa-solid fa-arrow-left text-xs animate-pulse bg-brand-600 w-full h-full flex items-center justify-center rounded-lg shadow-md shadow-brand-600/20"></i>
+                        <i v-if="activeSong" class="fa-solid fa-arrow-left text-xs bg-brand-600 w-full h-full flex items-center justify-center rounded-lg shadow-md shadow-brand-600/20"></i>
                         <img v-else src="logo-letra.png" alt="Reina Logo" class="w-full h-full object-contain">
                     </div>
                     <!-- Texto corregido: Se le dio espacio para que NO tape la "i" y combine con tu marca -->
