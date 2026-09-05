@@ -93,14 +93,23 @@
 
         <!-- HEADER / NAVIGATION -->
         <header class="sticky top-0 z-30 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-4 py-3 flex items-center justify-between shadow-lg">
-                     <div @click="volverAlHome" class="flex items-center space-x-3 cursor-pointer group select-none">
-                    <!-- Icono dinámico: Muestra una flecha si hay canción abierta, o la 'R' si estás en el Home -->
-                    <div class="w-8 h-8 bg-brand-600 group-hover:bg-brand-500 rounded-lg flex items-center justify-center font-bold text-white shadow-md shadow-brand-600/20 transition">
-                        <i v-if="activeSong" class="fa-solid fa-arrow-left text-xs animate-pulse"></i>
-                        <span v-else>R</span>
+                    <div @click="volverAlHome" class="flex items-center space-x-3 cursor-pointer group select-none">
+                    <!-- Icono dinámico nativo: Muestra una flecha si hay canción abierta, o el diseño de tu logo en SVG -->
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-white transition">
+                        <i v-if="activeSong" class="fa-solid fa-arrow-left text-xs animate-pulse bg-brand-600 w-full h-full flex items-center justify-center rounded-lg shadow-md shadow-brand-600/20"></i>
+                        <div v-else class="w-full h-full bg-[#0b0813] border border-[#3b30e3]/40 rounded-lg flex items-center justify-center p-1 shadow-inner">
+                            <!-- El código de abajo dibuja la nota musical 'R' estilizada de tu logo de manera nativa e instantánea -->
+                            <svg class="w-full h-full text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 18V5l12-2v13" />
+                                <circle cx="6" cy="18" r="3" fill="currentColor" />
+                                <path d="M12 9h9" />
+                            </svg>
+                        </div>
                     </div>
-                    <h1 class="text-base font-bold text-slate-100 tracking-tight hidden sm:block group-hover:text-white transition">
-                        REINA <span class="text-brand-500 font-medium text-xs bg-brand-950/60 px-1.5 py-0.5 rounded border border-brand-900/40 ml-1">PRO</span>
+                    <!-- Texto estilizado con el formato exacto de tu logotipo original sin usar imágenes pesadas -->
+                    <h1 class="text-lg font-bold text-slate-100 tracking-tight hidden sm:flex items-center gap-2 transition select-none">
+                        <span class="font-extrabold text-white">Reina</span>
+                        <span class="bg-[#3b30e3] text-white text-[10px] font-black uppercase px-2 py-0.5 rounded-md border border-[#4c41f5]/60 tracking-wider leading-none shadow-sm shadow-[#3b30e3]/30">PRO</span>
                     </h1>
                 </div>
                         <div class="flex items-center space-x-2">
