@@ -82,64 +82,66 @@
           <img src="logo-reina.png" alt="Reina PRO Logo" style="width: 240px; height: auto;" onload="setTimeout(() => { const s = document.getElementById('splash-screen'); if(s){ s.style.opacity='0'; setTimeout(() => s.remove(), 500); } }, 1000);">
         </div>
   
+    <!-- Reemplaza el bloque <div id="app"> y el script por esta versión corregida -->
     <div id="app" class="flex-1 flex flex-col max-w-5xl mx-auto w-full min-h-screen relative pb-20">
 
-        <!-- Pantalla de carga inicial (Firebase Connect) -->
-        <div v-if="isLoading" class="fixed inset-0 z-[100] bg-slate-950 flex flex-col items-center justify-center text-brand-400">
-            <i class="fa-solid fa-circle-notch fa-spin text-4xl mb-4"></i>
-            <h2 class="font-bold text-lg text-white tracking-tight">Reina <span class="text-brand-400 text-xs px-1.5 py-0.5 bg-brand-500/20 rounded-full border border-brand-500/30">PRO</span></h2>
-            <p class="text-sm text-slate-400 mt-2">Sincronizando con la nube...</p>
-        </div>
+    <!-- Pantalla de carga inicial (Firebase Connect) -->
+    <div v-if="isLoading" class="fixed inset-0 z-[100] bg-slate-950 flex flex-col items-center justify-center text-brand-400">
+        <i class="fa-solid fa-circle-notch fa-spin text-4xl mb-4"></i>
+        <h2 class="font-bold text-lg text-white tracking-tight">Reina <span class="text-brand-400 text-xs px-1.5 py-0.5 bg-brand-500/20 rounded-full border border-brand-500/30">PRO</span></h2>
+        <p class="text-sm text-slate-400 mt-2">Sincronizando con la nube...</p>
+    </div>
 
-        <!-- HEADER / NAVIGATION -->
-        <header class="sticky top-0 z-30 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-4 py-3 flex items-center justify-between shadow-lg">
-                 <div @click="volverAlHome" class="flex items-center space-x-2 cursor-pointer group select-none">
-                    <!-- Icono dinámico: Muestra una flecha si hay canción abierta, o tu logo estilizado sin deformarse -->
-                    <div class="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-white transition shrink-0">
-                        <i v-if="activeSong" class="fa-solid fa-arrow-left text-xs bg-brand-600 w-full h-full flex items-center justify-center rounded-lg shadow-md shadow-brand-600/20"></i>
-                        <img v-else src="logo-letra.png" alt="Reina Logo" class="w-full h-full object-contain">
-                    </div>
-                    <!-- Texto corregido: Se le dio espacio para que NO tape la "i" y combine con tu marca -->
-                    <h1 class="text-xl font-bold text-slate-100 tracking-tight flex items-center gap-1.5 transition select-none pl-1">
-                        <span class="font-black text-white tracking-tight">Reina</span>
-                        <span class="bg-[#3b30e3] text-white text-[9px] font-black uppercase px-1.5 py-0.5 rounded border border-[#4c41f5]/60 tracking-wider leading-none shadow-sm shadow-[#3b30e3]/30">PRO</span>
-                    </h1>
-                </div>
-                        <div class="flex items-center space-x-2">
-                <div v-if="connectionStatus" class="hidden sm:flex items-center mr-2 text-[10px] text-emerald-400 bg-emerald-950/50 px-2 py-1 rounded-md border border-emerald-900/50">
-                    <i class="fa-solid fa-cloud-check mr-1"></i> Sincronizado
-                </div>
-                
-                <!-- BOTÓN DE GOOGLE -->
-                <button @click="loginWithGoogle" class="p-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 text-xs font-medium flex items-center space-x-1.5 transition">
-                    <i class="fa-brands fa-google text-amber-400"></i>
-                    <span>{{ userEmail ? 'Cuenta' : 'Conectar' }}</span>
-                </button>
-
-                <button @click="openSetlistModal" class="p-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 text-xs font-medium flex items-center space-x-1.5 transition">
-                    <i class="fa-solid fa-list-check text-brand-400"></i>
-                    <span class="hidden sm:inline">Repertorios</span>
-                </button>
-                <button @click="openNewSongModal" class="px-3 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-semibold shadow-md shadow-brand-600/30 flex items-center space-x-1 transition">
-                    <i class="fa-solid fa-plus"></i>
-                    <span>Nueva</span>
-                </button>
+    <!-- HEADER / NAVIGATION -->
+    <header class="sticky top-0 z-30 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-4 py-3 flex items-center justify-between shadow-lg">
+        <div @click="volverAlHome" class="flex items-center space-x-2 cursor-pointer group select-none">
+            <div class="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-white transition shrink-0">
+                <i v-if="activeSong" class="fa-solid fa-arrow-left text-xs bg-brand-600 w-full h-full flex items-center justify-center rounded-lg shadow-md shadow-brand-600/20"></i>
+                <img v-else src="logo-letra.png" alt="Reina Logo" class="w-full h-full object-contain">
             </div>
-        </header>
+            <h1 class="text-xl font-bold text-slate-100 tracking-tight flex items-center gap-1.5 transition select-none pl-1">
+                <span class="font-black text-white tracking-tight">Reina</span>
+                <span class="bg-[#3b30e3] text-white text-[9px] font-black uppercase px-1.5 py-0.5 rounded border border-[#4c41f5]/60 tracking-wider leading-none shadow-sm shadow-[#3b30e3]/30">PRO</span>
+            </h1>
+        </div>
+        
+        <div class="flex items-center space-x-2">
+            <div v-if="connectionStatus" class="hidden sm:flex items-center mr-2 text-[10px] text-emerald-400 bg-emerald-950/50 px-2 py-1 rounded-md border border-emerald-900/50">
+                <i class="fa-solid fa-cloud-check mr-1"></i> Sincronizado
+            </div>
+            
+            <button @click="loginWithGoogle" class="p-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 text-xs font-medium flex items-center space-x-1.5 transition">
+                <i class="fa-brands fa-google text-amber-400"></i>
+                <span>{{ userEmail ? 'Cuenta' : 'Conectar' }}</span>
+            </button>
 
-        <!-- MAIN CONTAINER CONTENT -->
-        <main class="flex-1 p-3 sm:p-5 flex flex-col">
+            <button @click="openSetlistModal" class="p-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 text-xs font-medium flex items-center space-x-1.5 transition">
+                <i class="fa-solid fa-list-check text-brand-400"></i>
+                <span>Repertorios</span>
+            </button>
+            
+            <!-- Bloquear creación de canciones si estamos dentro de un repertorio temporal -->
+            <button v-if="!activeSetlist" @click="openNewSongModal" class="px-3 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-semibold shadow-md shadow-brand-600/30 flex items-center space-x-1 transition">
+                <i class="fa-solid fa-plus"></i>
+                <span>Nueva</span>
+            </button>
+        </div>
+    </header>
 
-            <div v-if="currentView === 'list'" class="space-y-4">
-                
-                <!-- Search & Filters Bar -->
-                <div class="bg-slate-900 p-3 sm:p-4 rounded-2xl border border-slate-800 shadow-md space-y-3">
-                    <div class="relative">
-                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-500"></i>
-                        <input type="text" v-model="searchQuery" placeholder="Buscar por título, artista o acordes..." class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand-500 transition">
-                    </div>
+    <!-- MAIN CONTAINER CONTENT -->
+    <main class="flex-1 p-3 sm:p-5 flex flex-col">
 
-                    <div class="flex items-center space-x-2 overflow-x-auto pb-1 text-xs">
+        <div v-if="currentView === 'list'" class="space-y-4">
+            
+            <!-- Search & Filters Bar -->
+            <div class="bg-slate-900 p-3 sm:p-4 rounded-2xl border border-slate-800 shadow-md space-y-3">
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-500"></i>
+                    <input type="text" v-model="searchQuery" placeholder="Buscar por título, artista o acordes..." class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand-500 transition">
+                </div>
+
+                <div class="flex items-center justify-between gap-2 overflow-x-auto pb-1 text-xs">
+                    <div class="flex items-center space-x-2">
                         <span class="text-slate-400 font-medium whitespace-nowrap"><i class="fa-solid fa-filter mr-1"></i>Tipo:</span>
                         <button @click="selectedCategoryFilter = ''" :class="selectedCategoryFilter === '' ? 'bg-brand-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'" class="px-2.5 py-1 rounded-lg font-medium whitespace-nowrap transition">
                             Todos
@@ -148,56 +150,70 @@
                             {{ cat }}
                         </button>
                     </div>
+                    
+                    <!-- Pestañas para alternar entre ver el Evento Temporal o la Biblioteca Base -->
+                    <div v-if="activeSetlist" class="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
+                        <button @click="showGlobalLibrary = false" :class="!showGlobalLibrary ? 'bg-brand-600 text-white font-bold' : 'text-slate-400'" class="px-3 py-1 rounded-lg transition">
+                            Del Evento
+                        </button>
+                        <button @click="showGlobalLibrary = true" :class="showGlobalLibrary ? 'bg-slate-800 text-white font-bold' : 'text-slate-500'" class="px-3 py-1 rounded-lg transition">
+                            + Agregar de Biblioteca
+                        </button>
+                    </div>
                 </div>
+            </div>
 
-                <!-- Active Setlist Banner if selected -->
-                <div v-if="activeSetlist" class="bg-gradient-to-r from-brand-900/60 to-purple-900/60 border border-brand-500/30 p-3 rounded-xl flex items-center justify-between">
-                    <div class="flex items-center space-x-2">
-                        <i class="fa-solid fa-bookmark text-brand-400"></i>
-                        <div>
-                            <span class="text-xs text-brand-300 font-semibold block">Repertorio Activo:</span>
-                            <span class="text-sm font-bold text-white">{{ activeSetlist.name }} ({{ activeSetlist.songIds.length }} canciones)</span>
+            <!-- Active Setlist Banner -->
+            <div v-if="activeSetlist" class="bg-gradient-to-r from-brand-900/60 to-purple-900/60 border border-brand-500/30 p-3 rounded-xl flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-bookmark text-brand-400"></i>
+                    <div>
+                        <span class="text-xs text-brand-300 font-semibold block">Repertorio Temporal Activo:</span>
+                        <span class="text-sm font-bold text-white">{{ activeSetlist.name }} ({{ (activeSetlist.songs || []).length }} canciones)</span>
+                    </div>
+                </div>
+                <button @click="desactivarRepertorio" class="text-xs bg-slate-800/80 hover:bg-slate-800 text-slate-300 px-2.5 py-1 rounded-lg border border-slate-700">
+                    Cerrar Evento y ver Todo
+                </button>
+            </div>
+
+            <!-- GRID DE CANCIONES -->
+            <div v-if="filteredSongs.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div v-for="song in filteredSongs" :key="song.id" @click="openSong(song)" class="bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 rounded-2xl p-4 cursor-pointer transition shadow-sm hover:shadow-md group flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-start justify-between gap-2 mb-1.5">
+                            <h3 class="font-bold text-slate-100 group-hover:text-brand-300 transition text-base line-clamp-1">{{ song.title }}</h3>
+                            <span class="px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 whitespace-nowrap">
+                                {{ song.key }}
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-400 mb-3 flex items-center gap-1">
+                            <i class="fa-solid fa-user text-[10px]"></i> {{ song.artist || 'Artista Desconocido' }}
+                        </p>
+
+                        <div class="flex flex-wrap gap-1.5 text-[10px] mb-3">
+                            <span class="bg-slate-800 text-slate-300 px-2 py-0.5 rounded-md border border-slate-700/50">
+                                <i class="fa-solid fa-list-ul mr-1 text-slate-400"></i>{{ song.category }}
+                            </span>
+                            <span v-if="song.genre" class="bg-slate-800 text-slate-300 px-2 py-0.5 rounded-md border border-slate-700/50">
+                                {{ song.genre }}
+                            </span>
+                            <span v-if="song.bpm" class="bg-emerald-950/80 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-md font-mono">
+                                <i class="fa-solid fa-drum mr-1"></i>{{ song.bpm }} BPM
+                            </span>
                         </div>
                     </div>
-                    <button @click="activeSetlist = null" class="text-xs bg-slate-800/80 hover:bg-slate-800 text-slate-300 px-2.5 py-1 rounded-lg border border-slate-700">
-                        Ver todas
-                    </button>
-                </div>
 
-                <div v-if="filteredSongs.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    <div v-for="song in filteredSongs" :key="song.id" @click="openSong(song)" class="bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 rounded-2xl p-4 cursor-pointer transition shadow-sm hover:shadow-md group flex flex-col justify-between">
-                        <div>
-                            <div class="flex items-start justify-between gap-2 mb-1.5">
-                                <h3 class="font-bold text-slate-100 group-hover:text-brand-300 transition text-base line-clamp-1">{{ song.title }}</h3>
-                                <span class="px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 whitespace-nowrap">
-                                    {{ song.key }}
-                                </span>
-                            </div>
-                            <p class="text-xs text-slate-400 mb-3 flex items-center gap-1">
-                                <i class="fa-solid fa-user text-[10px]"></i> {{ song.artist || 'Artista Desconocido' }}
-                            </p>
-
-                            <!-- Tags -->
-                            <div class="flex flex-wrap gap-1.5 text-[10px] mb-3">
-                                <span class="bg-slate-800 text-slate-300 px-2 py-0.5 rounded-md border border-slate-700/50">
-                                    <i class="fa-solid fa-list-ul mr-1 text-slate-400"></i>{{ song.category }}
-                                </span>
-                                <span v-if="song.genre" class="bg-slate-800 text-slate-300 px-2 py-0.5 rounded-md border border-slate-700/50">
-                                    {{ song.genre }}
-                                </span>
-                                <span v-if="song.bpm" class="bg-emerald-950/80 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-md font-mono">
-                                    <i class="fa-solid fa-drum mr-1"></i>{{ song.bpm }} BPM
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
-                            <span class="flex items-center gap-1 hover:text-red-400" v-if="song.youtubeUrl">
-                                <i class="fa-brands fa-youtube text-red-500 text-sm"></i> YouTube
-                            </span>
+                    <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
+                        <span class="flex items-center gap-1 hover:text-red-400">
+                            <i v-if="song.youtubeUrl" class="fa-brands fa-youtube text-red-500 text-sm"></i> 
+                            <span v-if="song.youtubeUrl">YouTube</span>
                             <span v-else class="text-[11px] text-slate-600">Sin link</span>
+                        </span>
 
-                            <div class="flex items-center space-x-1">
+                        <!-- ACCIONES DINÁMICAS (Dependen de si estás visualizando la librería global o el evento activo) -->
+                        <div class="flex items-center space-x-1" @click.stop>
+                            <!-- Caso 1: Estás explorando la librería global para SUMAR canciones al evento activo -->
                                 <button @click.stop="editSong(song)" class="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-md">
                                     <i class="fa-solid fa-pen text-xs"></i>
                                 </button>
