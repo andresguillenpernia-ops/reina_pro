@@ -15,7 +15,7 @@
     <link rel="icon" type="image/png" sizes="192x192" href="android-chrome-192x192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="android-chrome-512x512.png">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
-    <link rel="manifest" href="site.webmanifest?v=15.1.2">
+    <link rel="manifest" href="site.webmanifest?v=15.1.3">
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -100,7 +100,7 @@
                 <h1 class="text-xl font-bold text-slate-100 tracking-tight flex items-center gap-1.5 transition select-none pl-1">
                     <span class="font-black text-white tracking-tight">Reina</span>
                     <span class="bg-[#3b30e3] text-white text-[9px] font-black uppercase px-1.5 py-0.5 rounded border border-[#4c41f5]/60 tracking-wider leading-none shadow-sm shadow-[#3b30e3]/30">PRO</span>
-                    <span class="text-[10px] text-slate-500 font-medium tracking-wide self-end mb-0.5">v15.1.2</span>
+                    <span class="text-[10px] text-slate-500 font-medium tracking-wide self-end mb-0.5">v15.1.3</span>
                 </h1>
             </div>
             <div class="flex items-center space-x-2">
@@ -359,9 +359,8 @@
                             <span>{{ activeSetlist ? 'Editar Canción (Repertorio Temporal)' : (editingSong.id ? 'Editar Canción en la Nube' : 'Nueva Canción a la Nube') }}</span>
                         </h3>
                         
-                        <!-- Undo / Redo buttons inside modal header -->
                         <div class="flex items-center space-x-1 border-l border-slate-700 pl-3">
-                            <button @click="undoHistory" :disabled="historyIndex <= 0" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-slate-200 rounded-lg text-xs font-semibold flex items-center space-x-1 transition shadow-sm" title="Deshacer cambio (Ctrl+Z)">
+                            <button @click="undoHistory" :disabled="historyIndex <= 0" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-slate-200 rounded-lg text-xs font-semibold flex items-center space-x-1 transition shadow-sm" title="Deshacer cambio">
                                 <i class="fa-solid fa-rotate-left"></i>
                                 <span class="hidden sm:inline">Deshacer</span>
                             </button>
@@ -425,9 +424,9 @@
                             <div>
                                 <h4 class="font-bold text-slate-200 text-sm flex items-center gap-1.5">
                                     <i class="fa-solid fa-layer-group text-brand-400"></i>
-                                    <span>Estructura de Secciones de la Canción (Orden Exacto Solicitado)</span>
+                                    <span>Estructura de Secciones de la Canción</span>
                                 </h4>
-                                <p class="text-[11px] text-slate-400">Organiza, mueve, duplica o edita cada sesión con selector de acordes avanzado y sin pérdida de cursor.</p>
+                                <p class="text-[11px] text-slate-400">Organiza, mueve, duplica o edita cada sesión con selector de acordes avanzado.</p>
                             </div>
                             <button @click="addNewSection" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-500 text-white rounded-xl font-semibold flex items-center space-x-1 shadow">
                                 <i class="fa-solid fa-plus text-xs"></i>
@@ -446,87 +445,32 @@
                                     </div>
 
                                     <div class="flex items-center space-x-1">
-                                        <button @click="moveSection(idx, -1)" :disabled="idx === 0" class="p-1.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-30 text-slate-300 rounded-lg text-xs" title="Mover arriba">
-                                            <i class="fa-solid fa-arrow-up"></i>
+                                        <button @click="moveSection(idx, -1)" :disabled="idx === 0" class="p-1.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-30 text-slate-300 rounded-lg border border-slate-800" title="Subir sección">
+                                            <i class="fa-solid fa-arrow-up text-xs"></i>
                                         </button>
-                                        <button @click="moveSection(idx, 1)" :disabled="idx === builderSections.length - 1" class="p-1.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-30 text-slate-300 rounded-lg text-xs" title="Mover abajo">
-                                            <i class="fa-solid fa-arrow-down"></i>
+                                        <button @click="moveSection(idx, 1)" :disabled="idx === builderSections.length - 1" class="p-1.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-30 text-slate-300 rounded-lg border border-slate-800" title="Bajar sección">
+                                            <i class="fa-solid fa-arrow-down text-xs"></i>
                                         </button>
-                                        <button @click="cloneSection(idx)" class="p-1.5 bg-slate-900 hover:bg-slate-800 text-indigo-400 rounded-lg text-xs" title="Duplicar o clonar sesión">
-                                            <i class="fa-solid fa-clone"></i>
+                                        <button @click="duplicateSection(idx)" class="p-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-lg border border-slate-800" title="Duplicar">
+                                            <i class="fa-solid fa-copy text-xs"></i>
                                         </button>
-                                        <button @click="removeSection(idx)" class="p-1.5 bg-slate-900 hover:bg-red-950/60 text-slate-400 hover:text-red-400 rounded-lg text-xs" title="Eliminar sesión">
-                                            <i class="fa-solid fa-trash"></i>
+                                        <button @click="removeSection(idx)" class="p-1.5 bg-red-950/50 hover:bg-red-900/50 text-red-400 rounded-lg border border-red-900/50" title="Eliminar">
+                                            <i class="fa-solid fa-trash text-xs"></i>
                                         </button>
                                     </div>
                                 </div>
 
-                                <div class="relative">
-                                    <textarea 
-                                        :id="'section-textarea-' + idx"
-                                        v-model="sec.content" 
-                                        @input="onSectionInput($event, idx)" 
-                                        @keydown="onSectionKeyDown($event, idx)"
-                                        @click="onSectionClick(idx)"
-                                        rows="3" 
-                                        placeholder="Escribe la letra y usa corchetes [C] para los acordes. Presiona [ para sugerencias."
-                                        class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-slate-100 font-mono text-xs focus:outline-none focus:border-brand-500 leading-relaxed"></textarea>
-
-                                    <div v-if="activeAutocompleteIdx === idx" class="absolute z-50 bg-slate-900 border border-brand-500/50 rounded-xl shadow-2xl p-2 w-64 max-h-48 overflow-y-auto mt-1 left-2">
-                                        <div class="text-[10px] text-slate-400 px-2 py-1 border-b border-slate-800 flex justify-between items-center font-semibold">
-                                            <span>SELECCIONAR ACORDE</span>
-                                            <span class="text-brand-400">Esc: Cerrar</span>
-                                        </div>
-                                        <div class="grid grid-cols-4 gap-1 pt-1">
-                                            <button v-for="chord in suggestedChordsList" :key="chord" @click.prevent="insertChordAtCursor(idx, chord)" class="bg-slate-800 hover:bg-brand-600 hover:text-white text-slate-200 text-xs font-mono font-bold py-1.5 rounded-lg border border-slate-700/60 transition text-center">
-                                                {{ chord }}
-                                            </button>
-                                        </div>
-                                    </div>
+                                <div class="space-y-2">
+                                    <textarea v-model="sec.lines" @input="recordHistory" rows="3" placeholder="Escribe la letra aquí. Usa [C] antes de las palabras para insertar acordes..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-slate-100 font-mono text-xs focus:outline-none focus:border-brand-500 leading-relaxed"></textarea>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-3">
-                        <h4 class="font-bold text-slate-300 flex items-center gap-1.5">
-                            <i class="fa-solid fa-sliders text-brand-400"></i>
-                            <span>Arreglos Específicos por Instrumento</span>
-                        </h4>
-                        
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-slate-400 mb-1">🎹 Piano / Teclados</label>
-                                <textarea v-model="editingSong.arrangements.piano" @input="recordHistory" rows="2" placeholder="Notas de intro..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-200 text-xs"></textarea>
-                            </div>
-                            <div>
-                                <label class="block text-slate-400 mb-1">🎸 Guitarra</label>
-                                <textarea v-model="editingSong.arrangements.guitarra" @input="recordHistory" rows="2" placeholder="Rasgueo, picking..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-200 text-xs"></textarea>
-                            </div>
-                            <div>
-                                <label class="block text-slate-400 mb-1">🎸 Bajo</label>
-                                <textarea v-model="editingSong.arrangements.bajo" @input="recordHistory" rows="2" placeholder="Línea de bajo..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-200 text-xs"></textarea>
-                            </div>
-                            <div>
-                                <label class="block text-slate-400 mb-1">🎻 Violín / Cuerdas</label>
-                                <textarea v-model="editingSong.arrangements.violin" @input="recordHistory" rows="2" placeholder="Melodía secundaria..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-200 text-xs"></textarea>
-                            </div>
-                            <div class="sm:col-span-2">
-                                <label class="block text-slate-400 mb-1">🥁 Batería / Percusión</label>
-                                <textarea v-model="editingSong.arrangements.bateria" @input="recordHistory" rows="2" placeholder="Ritmo de entrada..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-200 text-xs"></textarea>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="px-5 py-3 border-t border-slate-800 bg-slate-950/50 flex justify-between items-center">
-                    <div class="text-[11px] text-slate-400">
-                        <i class="fa-solid fa-rotate-left mr-1"></i> Ctrl+Z activado para historial completo
-                    </div>
-                    <div class="flex space-x-2">
-                        <button @click="showSongModal = false" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-medium text-xs">Cancelar</button>
-                        <button @click="saveSong" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-xl font-semibold text-xs shadow-lg shadow-brand-600/30">{{ activeSetlist ? 'Guardar en este Repertorio' : 'Guardar Canción' }}</button>
-                    </div>
+                <div class="px-5 py-3 border-t border-slate-800 bg-slate-950/50 flex justify-end space-x-2">
+                    <button @click="showSongModal = false" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-medium text-xs">Cancelar</button>
+                    <button @click="saveSong" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-xl font-semibold text-xs shadow-lg shadow-brand-600/30">{{ activeSetlist ? 'Guardar en este Repertorio' : 'Guardar Canción' }}</button>
                 </div>
             </div>
         </div>
@@ -553,7 +497,7 @@
                         <div v-for="setlist in setlists" :key="setlist.id" class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
                             <div>
                                 <h4 class="font-bold text-slate-200">{{ setlist.name }}</h4>
-                                <span class="text-[11px] text-slate-400">{{ setlist.songs ? setlist.songs.length : (setlist.songIds ? setlist.songIds.length : 0) }} canciones en evento</span>
+                                <span class="text-[11px] text-slate-400">{{ setlist.songs ? setlist.songs.length : 0 }} canciones en evento</span>
                             </div>
                             <div class="flex items-center space-x-1.5">
                                 <button @click="selectSetlist(setlist)" class="px-2.5 py-1 bg-brand-600/20 hover:bg-brand-600/40 text-brand-300 border border-brand-500/30 rounded-lg text-xs font-medium">
@@ -629,7 +573,7 @@
               measurementId: "G-MVVHKN14NJ"
             };
 
-        const { createApp, ref, computed, onMounted, onUnmounted, nextTick } = Vue;
+        const { createApp, ref, computed, onMounted } = Vue;
 
         createApp({
             setup() {
@@ -640,34 +584,21 @@
                 const searchQuery = ref('');
                 const selectedCategoryFilter = ref('');
                 const toastMessage = ref('');
-                const userId = ref('equipo_reina');
+                const userId = ref(null);
 
                 const categories = ['Alabanza', 'Adoración', 'Especial', 'Entrada', 'Meditación', 'Ofrenda'];
                 const chromaticKeys = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
                 
-                // EXACT requested session types in exact specified order
+                // Complete list of available session types requested by the user
                 const availableSessionTypes = [
-                    'Intro (Musical)',
-                    'Estrofa 1 (Verse)',
-                    'Estrofa 2 (Verse)',
-                    'Estrofa 3 (Verse)',
-                    'Coro (Chorus)',
-                    'Puente (Bridge)',
-                    'Instrumental (Musical)',
-                    'Cierre (Outro)',
-                    'Pre-coro (Pre-Chorus / Lift)',
-                    'Post-coro (Post-Chorus)',
-                    'Pre-intro (Musical)',
-                    'Interludio (Interlude)',
-                    'Solo (Musical)',
-                    'Subidón o Quiebre (Drop)',
-                    'Hook Instrumental (Riff)',
-                    'Chanteo (Rap Verse)',
-                    'Transición de Ritmo (Dembow Loop)',
-                    'Pauta (Shout-out)',
-                    'Recitado (Spoken Word)'
+                    'Intro (Musical)', 'Estrofa 1 (Verse)', 'Estrofa 2 (Verse)', 'Estrofa 3 (Verse)', 
+                    'Coro (Chorus)', 'Puente (Bridge)', 'Instrumental (Musical)', 'Cierre (Outro)', 
+                    'Pre-coro (Pre-Chorus / Lift)', 'Post-coro (Post-Chorus)', 'Pre-intro (Musical)', 
+                    'Interludio (Interlude)', 'Solo (Musical)', 'Subidón o Quiebre (Drop)', 
+                    'Hook Instrumental (Riff)', 'Chanteo (Rap Verse)', 'Transición de Ritmo (Dembow Loop)', 
+                    'Pauta (Shout-out)', 'Recitado (Spoken Word)'
                 ];
-
+                
                 const instruments = [
                     { id: 'all', name: 'Todos', icon: 'fa-solid fa-layer-group' },
                     { id: 'piano', name: 'Piano', icon: 'fa-solid fa-keyboard' },
@@ -689,16 +620,12 @@
                 const showSetlistModal = ref(false);
                 const newSetlistName = ref('');
                 const editingSong = ref(createEmptySong());
-                const originalSongKeyForTransposition = ref('C');
                 const builderSections = ref([]);
 
-                // History state for Undo / Redo (Ctrl+Z functionality)
+                // History state stack for Undo / Redo in song editor
                 const historyStack = ref([]);
                 const historyIndex = ref(-1);
-                let isPerformingUndoRedo = false;
-
-                const activeAutocompleteIdx = ref(null);
-                const suggestedChordsList = ref(['C', 'G', 'Am', 'F', 'Dm', 'Em', 'A', 'D', 'E', 'B7', 'G7', 'C7', 'F#m', 'Bm', 'Bb', 'Eb']);
+                let isPerformingHistoryAction = false;
 
                 const showAddSongModal = ref(false);
                 const addSongSearchQuery = ref('');
@@ -723,7 +650,7 @@
                         key: 'C', bpm: 72, timeSignature: '4/4', category: 'Adoración', genre: 'Pop Worship',
                         youtubeUrl: 'https://www.youtube.com/watch?v=0B6_V2M1Axg',
                         arrangements: { piano: 'Intro suave...', guitarra: 'Capo 5 en posición de G.', bajo: 'Tónica clara.', violin: '', bateria: 'Rimshot en el verso 1.' },
-                        content: "[Intro (Musical)]\n[C]  [F]  [C]  [G]\n\n[Estrofa 1 (Verse)]\n[C]Te amo Dios, Tu mi[F]sericordia no me fa[C]lla\n[G/B]Cada ma[Am]ñana me des[F]piertas con Tu a[G]mor\n\n[Coro (Chorus)]\nY can[F]taré de la bon[C]dad de Dios"
+                        content: "[Intro]\n[C]  [F]  [C]  [G]\n\n[Estrofa 1]\n[C]Te amo Dios, Tu mi[F]sericordia no me fa[C]lla\n[G/B]Cada ma[Am]ñana me des[F]piertas con Tu a[G]mor\n\n[Coro]\nY can[F]taré de la bon[C]dad de Dios"
                     }
                 ];
 
@@ -740,78 +667,6 @@
                     setTimeout(() => toastMessage.value = '', 3000);
                 }
 
-                // History / Undo & Redo management
-                function recordHistory() {
-                    if (isPerformingUndoRedo) return;
-                    const currentState = JSON.stringify({
-                        song: editingSong.value,
-                        sections: builderSections.value
-                    });
-                    
-                    // If state hasn't changed from current history tip, ignore
-                    if (historyIndex.value >= 0 && historyStack.value[historyIndex.value] === currentState) {
-                        return;
-                    }
-
-                    // Cut forward stack if we were in the middle
-                    if (historyIndex.value < historyStack.value.length - 1) {
-                        historyStack.value = historyStack.value.slice(0, historyIndex.value + 1);
-                    }
-
-                    historyStack.value.push(currentState);
-                    // Limit history stack size to 50
-                    if (historyStack.value.length > 50) {
-                        historyStack.value.shift();
-                    } else {
-                        historyIndex.value++;
-                    }
-                }
-
-                function undoHistory() {
-                    if (historyIndex.value > 0) {
-                        historyIndex.value--;
-                        applyHistoryState(historyStack.value[historyIndex.value]);
-                        showToast("Cambio deshecho");
-                    }
-                }
-
-                function redoHistory() {
-                    if (historyIndex.value < historyStack.value.length - 1) {
-                        historyIndex.value++;
-                        applyHistoryState(historyStack.value[historyIndex.value]);
-                        showToast("Cambio rehecho");
-                    }
-                }
-
-                function applyHistoryState(stateStr) {
-                    isPerformingUndoRedo = true;
-                    try {
-                        const parsed = JSON.parse(stateStr);
-                        editingSong.value = JSON.parse(JSON.stringify(parsed.song));
-                        builderSections.value = JSON.parse(JSON.stringify(parsed.sections));
-                    } catch (e) {
-                        console.error("Error applying history state", e);
-                    }
-                    nextTick(() => {
-                        isPerformingUndoRedo = false;
-                    });
-                }
-
-                function handleGlobalKeydown(e) {
-                    if (!showSongModal.value) return;
-                    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
-                        if (e.shiftKey) {
-                            redoHistory();
-                        } else {
-                            undoHistory();
-                        }
-                        e.preventDefault();
-                    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
-                        redoHistory();
-                        e.preventDefault();
-                    }
-                }
-
                 async function initFirebase() {
                     try {
                         const app = initializeApp(firebaseConfig);
@@ -820,6 +675,7 @@
 
                         auth.onAuthStateChanged((user) => {
                             if (user) {
+                                userId.value = 'equipo_reina';
                                 userEmail.value = user.email || null;
                                 setupFirestoreListeners();
                             } else {
@@ -896,68 +752,102 @@
 
                 onMounted(() => {
                     initFirebase();
-                    window.addEventListener('keydown', handleGlobalKeydown);
                 });
 
-                onUnmounted(() => {
-                    window.removeEventListener('keydown', handleGlobalKeydown);
-                });
-
-                function getSemitoneDistance(keyFrom, keyTo) {
-                    let idxFrom = notesSharp.indexOf(keyFrom);
-                    if (idxFrom === -1) idxFrom = notesFlat.indexOf(keyFrom);
-                    let idxTo = notesSharp.indexOf(keyTo);
-                    if (idxTo === -1) idxTo = notesFlat.indexOf(keyTo);
-
-                    if (idxFrom === -1 || idxTo === -1) return 0;
-                    let diff = idxTo - idxFrom;
-                    return diff;
+                // Helper to synchronize builder sections back into raw string content
+                function updateContentFromBuilder() {
+                    editingSong.value.content = builderSections.value.map(sec => `[${sec.type}]\n${sec.lines}`).join('\n\n');
                 }
 
-                function transposeTextContent(contentStr, semitones) {
-                    if (!contentStr || semitones === 0) return contentStr;
-                    return contentStr.replace(/\[([A-G][b#]?[^\]]*)\]/g, (match, chordGroup) => {
-                        const transposedChord = chordGroup.replace(/([A-G][b#]?)/g, (m) => {
-                            let isFlat = m.includes('b');
-                            let scale = isFlat ? notesFlat : notesSharp;
-                            let index = scale.indexOf(m);
-                            if (index === -1) {
-                                index = (isFlat ? notesSharp : notesFlat).indexOf(m);
-                                scale = notesSharp;
-                            }
-                            if (index === -1) return m;
-                            let transposedIndex = (index + semitones) % 12;
-                            if (transposedIndex < 0) transposedIndex += 12;
-                            return scale[transposedIndex];
-                        });
-                        return `[${transposedChord}]`;
-                    });
+                function recordHistory() {
+                    if (isPerformingHistoryAction) return;
+                    updateContentFromBuilder();
+                    const currentState = JSON.parse(JSON.stringify(editingSong.value));
+                    
+                    if (historyIndex.value < historyStack.value.length - 1) {
+                        historyStack.value = historyStack.value.slice(0, historyIndex.value + 1);
+                    }
+                    historyStack.value.push(currentState);
+                    historyIndex.value = historyStack.value.length - 1;
                 }
 
-                function onKeyChanged() {
-                    const newKey = editingSong.value.key;
-                    const semitones = getSemitoneDistance(originalSongKeyForTransposition.value, newKey);
-                    if (semitones !== 0) {
-                        builderSections.value.forEach(sec => {
-                            sec.content = transposeTextContent(sec.content, semitones);
-                        });
-                        originalSongKeyForTransposition.value = newKey;
-                        recordHistory();
-                        showToast(`Acordes transportados automáticamente a ${newKey}`);
+                function undoHistory() {
+                    if (historyIndex.value > 0) {
+                        isPerformingHistoryAction = true;
+                        historyIndex.value--;
+                        editingSong.value = JSON.parse(JSON.stringify(historyStack.value[historyIndex.value]));
+                        parseContentToBuilder();
+                        isPerformingHistoryAction = false;
                     }
                 }
 
+                function redoHistory() {
+                    if (historyIndex.value < historyStack.value.length - 1) {
+                        isPerformingHistoryAction = true;
+                        historyIndex.value++;
+                        editingSong.value = JSON.parse(JSON.stringify(historyStack.value[historyIndex.value]));
+                        parseContentToBuilder();
+                        isPerformingHistoryAction = false;
+                    }
+                }
+
+                function parseContentToBuilder() {
+                    const content = editingSong.value.content || '';
+                    const rawLines = content.split('\n');
+                    const sections = [];
+                    let currentSec = { type: 'Estrofa 1 (Verse)', lines: [] };
+
+                    rawLines.forEach(line => {
+                        const trimmed = line.trim();
+                        if (trimmed.startsWith('[') && trimmed.endsWith(']') && !trimmed.includes(' ') && !isChordString(trimmed)) {
+                            if (currentSec.lines.length > 0 || sections.length > 0) {
+                                sections.push({ type: currentSec.type, lines: currentSec.lines.join('\n') });
+                            }
+                            const tName = trimmed.substring(1, trimmed.length - 1);
+                            currentSec = { type: tName, lines: [] };
+                            return;
+                        }
+                        currentSec.lines.push(line);
+                    });
+                    
+                    if (currentSec.lines.length > 0 || sections.length === 0) {
+                        sections.push({ type: currentSec.type, lines: currentSec.lines.join('\n') });
+                    }
+                    builderSections.value = sections;
+                }
+
+                function addNewSection() {
+                    builderSections.value.push({ type: 'Coro (Chorus)', lines: '' });
+                    recordHistory();
+                }
+
+                function moveSection(idx, direction) {
+                    const target = idx + direction;
+                    if (target < 0 || target >= builderSections.value.length) return;
+                    const item = builderSections.value.splice(idx, 1)[0];
+                    builderSections.value.splice(target, 0, item);
+                    recordHistory();
+                }
+
+                function duplicateSection(idx) {
+                    const clone = JSON.parse(JSON.stringify(builderSections.value[idx]));
+                    builderSections.value.splice(idx + 1, 0, clone);
+                    recordHistory();
+                }
+
+                function removeSection(idx) {
+                    if (builderSections.value.length <= 1) {
+                        showToast("La canción debe tener al menos una sección.");
+                        return;
+                    }
+                    builderSections.value.splice(idx, 1);
+                    recordHistory();
+                }
+
                 async function saveSong() {
+                    updateContentFromBuilder();
                     if (!editingSong.value.title) return showToast("El título es obligatorio");
                     if (!userId.value) return;
-
-                    builderSections.value.forEach(sec => {
-                        if (sec.content) {
-                            sec.content = sec.content.replace(/\[+/g, '[').replace(/\]+/g, ']');
-                        }
-                    });
-
-                    editingSong.value.content = builderSections.value.map(sec => `[${sec.type}]\n${sec.content}`).join('\n\n');
 
                     if (activeSetlist.value) {
                         const index = activeSetlist.value.songs.findIndex(s => s.id === editingSong.value.id);
@@ -965,35 +855,17 @@
                             activeSetlist.value.songs[index] = { ...editingSong.value };
                             const setlistRef = doc(db, 'artifacts', appId, 'users', userId.value, 'setlists', activeSetlist.value.id);
                             await updateDoc(setlistRef, { songs: activeSetlist.value.songs });
-                        } else {
-                            activeSetlist.value.songs.push({ ...editingSong.value });
-                            const setlistRef = doc(db, 'artifacts', appId, 'users', userId.value, 'setlists', activeSetlist.value.id);
-                            await updateDoc(setlistRef, { songs: activeSetlist.value.songs });
+                            showToast("Cambios guardados solo en este evento temporal");
                         }
-                        
                         if (activeSong.value && activeSong.value.id === editingSong.value.id) {
                             activeSong.value = { ...editingSong.value };
                         }
-                        showToast("Cambios guardados instantáneamente en este repertorio temporal");
                     } else {
                         const id = editingSong.value.id || ('song-' + Date.now());
                         const songData = { ...editingSong.value, id };
-                        
                         const songRef = doc(db, 'artifacts', appId, 'users', userId.value, 'songs', id);
                         await setDoc(songRef, songData);
-
-                        const existingIdx = songs.value.findIndex(s => s.id === id);
-                        if (existingIdx !== -1) {
-                            songs.value[existingIdx] = songData;
-                        } else {
-                            songs.value.push(songData);
-                        }
-                        songs.value.sort((a, b) => a.title.localeCompare(b.title));
-
-                        if (activeSong.value && activeSong.value.id === id) {
-                            activeSong.value = { ...songData };
-                        }
-                        showToast("Canción guardada instantáneamente en la biblioteca principal");
+                        showToast("Canción guardada en la biblioteca principal");
                     }
                     
                     showSongModal.value = false;
@@ -1010,7 +882,6 @@
                     } else {
                         const songRef = doc(db, 'artifacts', appId, 'users', userId.value, 'songs', song.id);
                         await deleteDoc(songRef);
-                        songs.value = songs.value.filter(s => s.id !== song.id);
                         showToast("Canción eliminada permanentemente");
                     }
                     
@@ -1030,7 +901,6 @@
                     const setlistRef = doc(db, 'artifacts', appId, 'users', userId.value, 'setlists', id);
                     await setDoc(setlistRef, setlistData);
 
-                    setlists.value.push(setlistData);
                     newSetlistName.value = '';
                     showSetlistModal.value = false;
                     showToast("Repertorio temporal creado vacío");
@@ -1041,127 +911,10 @@
                     const setlistRef = doc(db, 'artifacts', appId, 'users', userId.value, 'setlists', id);
                     await deleteDoc(setlistRef);
                     
-                    setlists.value = setlists.value.filter(s => s.id !== id);
                     if (activeSetlist.value && activeSetlist.value.id === id) {
                         activeSetlist.value = null;
                     }
                     showToast("Repertorio eliminado");
-                }
-
-                function parseSongIntoBuilderSections(contentStr) {
-                    if (!contentStr) return [{ type: 'Estrofa 1 (Verse)', content: '' }];
-                    const lines = contentStr.split('\n');
-                    const sections = [];
-                    let current = { type: 'Estrofa 1 (Verse)', contentLines: [] };
-
-                    lines.forEach(line => {
-                        const trimmed = line.trim();
-                        if (trimmed.startsWith('[') && trimmed.endsWith(']') && !trimmed.includes(' ')) {
-                            if (current.contentLines.length > 0 || sections.length === 0) {
-                                if (current.contentLines.length > 0) {
-                                    sections.push({ type: current.type, content: current.contentLines.join('\n') });
-                                }
-                                current = { type: trimmed.substring(1, trimmed.length - 1), contentLines: [] };
-                            } else {
-                                current.type = trimmed.substring(1, trimmed.length - 1);
-                            }
-                            return;
-                        }
-                        current.contentLines.push(line);
-                    });
-                    if (current.contentLines.length > 0 || sections.length === 0) {
-                        sections.push({ type: current.type, content: current.contentLines.join('\n') });
-                    }
-                    return sections;
-                }
-
-                function addNewSection() {
-                    builderSections.value.push({ type: 'Coro (Chorus)', content: '' });
-                    recordHistory();
-                }
-
-                function moveSection(idx, dir) {
-                    const target = idx + dir;
-                    if (target < 0 || target >= builderSections.value.length) return;
-                    const item = builderSections.value.splice(idx, 1)[0];
-                    builderSections.value.splice(target, 0, item);
-                    activeAutocompleteIdx.value = null;
-                    recordHistory();
-                }
-
-                function cloneSection(idx) {
-                    const clone = JSON.parse(JSON.stringify(builderSections.value[idx]));
-                    builderSections.value.splice(idx + 1, 0, clone);
-                    recordHistory();
-                    showToast("Sección duplicada");
-                }
-
-                function removeSection(idx) {
-                    if (builderSections.value.length <= 1) return showToast("La canción debe tener al menos una sección");
-                    builderSections.value.splice(idx, 1);
-                    activeAutocompleteIdx.value = null;
-                    recordHistory();
-                    showToast("Sección eliminada");
-                }
-
-                function onSectionInput(event, idx) {
-                    const val = event.target.value;
-                    const cursorPos = event.target.selectionStart;
-                    if (cursorPos > 0 && val[cursorPos - 1] === '[') {
-                        activeAutocompleteIdx.value = idx;
-                    } else {
-                        const lastOpen = val.lastIndexOf('[', cursorPos - 1);
-                        const lastClose = val.lastIndexOf(']', cursorPos - 1);
-                        if (lastOpen === -1 || lastClose > lastOpen) {
-                            if (activeAutocompleteIdx.value === idx) activeAutocompleteIdx.value = null;
-                        }
-                    }
-                    recordHistory();
-                }
-
-                function onSectionKeyDown(event, idx) {
-                    if (event.key === 'Escape') {
-                        activeAutocompleteIdx.value = null;
-                    }
-                }
-
-                function onSectionClick(idx) {
-                    const textarea = document.getElementById('section-textarea-' + idx);
-                    if (!textarea) return;
-                    const cursorPos = textarea.selectionStart;
-                    const val = textarea.value;
-                    if (cursorPos > 0 && val[cursorPos - 1] === '[') {
-                        activeAutocompleteIdx.value = idx;
-                    } else {
-                        activeAutocompleteIdx.value = null;
-                    }
-                }
-
-                // FIXED: Chord selection inserts chord and immediately restores cursor right after without jumping around
-                function insertChordAtCursor(idx, chord) {
-                    const textarea = document.getElementById('section-textarea-' + idx);
-                    if (!textarea) return;
-                    
-                    const start = textarea.selectionStart;
-                    const end = textarea.selectionEnd;
-                    const val = textarea.value;
-
-                    let chordInsert = chord + ']';
-                    if (val.substring(start, start + 1) === ']') {
-                        chordInsert = chord;
-                    }
-
-                    const newVal = val.substring(0, start) + chordInsert + val.substring(end);
-                    
-                    builderSections.value[idx].content = newVal;
-                    activeAutocompleteIdx.value = null;
-                    recordHistory();
-
-                    nextTick(() => {
-                        textarea.focus();
-                        const newCursorPos = start + chordInsert.length;
-                        textarea.setSelectionRange(newCursorPos, newCursorPos);
-                    });
                 }
 
                 const addableSongs = computed(() => {
@@ -1185,27 +938,17 @@
 
                 function openNewSongModal() {
                     editingSong.value = createEmptySong();
-                    originalSongKeyForTransposition.value = 'C';
-                    builderSections.value = [{ type: 'Estrofa 1 (Verse)', content: '' }];
-                    
-                    // Reset history stack for new song
-                    historyStack.value = [];
-                    historyIndex.value = -1;
-                    recordHistory();
-
+                    parseContentToBuilder();
+                    historyStack.value = [JSON.parse(JSON.stringify(editingSong.value))];
+                    historyIndex.value = 0;
                     showSongModal.value = true;
                 }
 
                 function editSong(song) {
                     editingSong.value = JSON.parse(JSON.stringify(song));
-                    originalSongKeyForTransposition.value = song.key || 'C';
-                    builderSections.value = parseSongIntoBuilderSections(song.content);
-                    
-                    // Reset history stack for edited song
-                    historyStack.value = [];
-                    historyIndex.value = -1;
-                    recordHistory();
-
+                    parseContentToBuilder();
+                    historyStack.value = [JSON.parse(JSON.stringify(editingSong.value))];
+                    historyIndex.value = 0;
                     showSongModal.value = true;
                 }
 
@@ -1223,15 +966,7 @@
                 }
 
                 function selectSetlist(setlist) {
-                    if (!setlist.songs && setlist.songIds) {
-                        setlist.songs = songs.value.filter(s => setlist.songIds.includes(s.id)).map(s => JSON.parse(JSON.stringify(s)));
-                        if (userId.value) {
-                            const setlistRef = doc(db, 'artifacts', appId, 'users', userId.value, 'setlists', setlist.id);
-                            updateDoc(setlistRef, { songs: setlist.songs });
-                        }
-                    }
                     if (!setlist.songs) setlist.songs = [];
-
                     activeSetlist.value = setlist;
                     showSetlistModal.value = false;
                     currentView.value = 'list';
@@ -1250,7 +985,7 @@
                     await updateDoc(setlistRef, { songs: activeSetlist.value.songs });
                     
                     showAddSongModal.value = false;
-                    showToast("Agregada al evento temporal");
+                    showToast("Agregada al evento correctamente");
                 }
 
                 function getInstrumentName(id) {
@@ -1299,6 +1034,7 @@
                     return diff > 0 ? `${diff}º traste` : null;
                 });
 
+                // Robust parser for all 20 session types with custom styling recognition
                 const parsedSongSections = computed(() => {
                     if (!activeSong.value || !activeSong.value.content) return [];
 
@@ -1311,7 +1047,7 @@
                         if (trimmed.startsWith('[') && trimmed.endsWith(']') && !trimmed.includes(' ') && !isChordString(trimmed)) {
                             if (currentSection.lines.length > 0) sections.push(currentSection);
                             const titleStr = trimmed.substring(1, trimmed.length - 1);
-                            currentSection = { type: titleStr, title: titleStr, lines: [] };
+                            currentSection = { type: getSectionTypeFromTitle(titleStr), title: titleStr, lines: [] };
                             return;
                         }
                         if (line.includes('[') && line.includes(']')) {
@@ -1330,39 +1066,82 @@
                     return /^[A-G][b#]?(m|maj|min|dim|aug|sus|[0-9])?(\/[A-G][b#]?)?$/.test(clean);
                 }
 
-                // Custom styling and design for all session types requested
+                // FIX: MAPPING FUNCTION RECOGNIZING ALL NEW VARIANT KEYWORDS ACCURATELY
+                function getSectionTypeFromTitle(title) {
+                    const t = title.toLowerCase();
+                    if (t.includes('coro')) return 'coro';
+                    if (t.includes('intro') || t.includes('pre-intro')) return 'intro';
+                    if (t.includes('puente')) return 'puente';
+                    if (t.includes('pre-coro') || t.includes('pre coro') || t.includes('lift')) return 'pre-coro';
+                    if (t.includes('post-coro') || t.includes('post coro')) return 'post-coro';
+                    if (t.includes('instrumental') || t.includes('solo') || t.includes('riff') || t.includes('hook')) return 'instrumental';
+                    if (t.includes('cierre') || t.includes('outro')) return 'cierre';
+                    if (t.includes('interludio')) return 'interludio';
+                    if (t.includes('drop') || t.includes('subidón') || t.includes('quiebre')) return 'drop';
+                    if (t.includes('chanteo') || t.includes('rap')) return 'chanteo';
+                    if (t.includes('transición') || t.includes('ritmo') || t.includes('dembow')) return 'transicion';
+                    if (t.includes('pauta') || t.includes('shout')) return 'pauta';
+                    if (t.includes('recitado') || t.includes('spoken')) return 'recitado';
+                    return 'verso'; // Default fallback for Estrofa 1, 2, 3, etc.
+                }
+
                 function getSessionContainerStyle(type) {
-                    const t = type.toLowerCase();
-                    if (t.includes('coro')) return 'bg-brand-900/10 border-brand-500/20';
-                    if (t.includes('intro') || t.includes('instrumental') || t.includes('solo') || t.includes('interludio') || t.includes('riff') || t.includes('pre-intro')) return 'bg-slate-800/30 border-slate-700/50';
-                    if (t.includes('puente')) return 'bg-purple-900/10 border-purple-500/20';
-                    if (t.includes('pre-coro') || t.includes('post-coro') || t.includes('drop')) return 'bg-blue-900/10 border-blue-500/20';
-                    if (t.includes('chanteo') || t.includes('dembow') || t.includes('shout') || t.includes('spoken')) return 'bg-amber-900/10 border-amber-500/20';
-                    return 'bg-slate-900/50 border-slate-800/80';
+                    const styles = {
+                        'coro': 'bg-brand-900/15 border-brand-500/30 shadow-md shadow-brand-900/20',
+                        'intro': 'bg-slate-800/40 border-slate-700/60',
+                        'puente': 'bg-purple-900/15 border-purple-500/30 shadow-md shadow-purple-900/20',
+                        'pre-coro': 'bg-blue-900/15 border-blue-500/30',
+                        'post-coro': 'bg-indigo-900/15 border-indigo-500/30',
+                        'instrumental': 'bg-amber-950/20 border-amber-500/30',
+                        'cierre': 'bg-emerald-950/20 border-emerald-500/30',
+                        'interludio': 'bg-cyan-950/20 border-cyan-500/30',
+                        'drop': 'bg-rose-950/20 border-rose-500/30',
+                        'chanteo': 'bg-orange-950/20 border-orange-500/30',
+                        'transicion': 'bg-teal-950/20 border-teal-500/30',
+                        'pauta': 'bg-yellow-950/20 border-yellow-500/30',
+                        'recitado': 'bg-violet-950/20 border-violet-500/30',
+                        'verso': 'bg-slate-900/60 border-slate-800/80 shadow-sm'
+                    };
+                    return styles[type] || styles['verso'];
                 }
 
                 function getSessionHeaderBadgeStyle(type) {
-                    const t = type.toLowerCase();
-                    if (t.includes('coro')) return 'bg-brand-500/20 text-brand-300 border-brand-500/30';
-                    if (t.includes('intro') || t.includes('instrumental') || t.includes('solo') || t.includes('interludio') || t.includes('riff') || t.includes('pre-intro')) return 'bg-slate-800 text-slate-300 border-slate-700';
-                    if (t.includes('puente')) return 'bg-purple-500/20 text-purple-300 border-purple-500/30';
-                    if (t.includes('pre-coro') || t.includes('post-coro') || t.includes('drop')) return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
-                    if (t.includes('chanteo') || t.includes('dembow') || t.includes('shout') || t.includes('spoken')) return 'bg-amber-500/20 text-amber-300 border-amber-500/30';
-                    return 'bg-slate-800 text-slate-400 border-slate-700';
+                    const styles = {
+                        'coro': 'bg-brand-500/25 text-brand-300 border-brand-500/40 font-black',
+                        'intro': 'bg-slate-700 text-slate-300 border-slate-600 font-bold',
+                        'puente': 'bg-purple-500/25 text-purple-300 border-purple-500/40 font-black',
+                        'pre-coro': 'bg-blue-500/25 text-blue-300 border-blue-500/40 font-bold',
+                        'post-coro': 'bg-indigo-500/25 text-indigo-300 border-indigo-500/40 font-bold',
+                        'instrumental': 'bg-amber-500/25 text-amber-300 border-amber-500/40 font-bold',
+                        'cierre': 'bg-emerald-500/25 text-emerald-300 border-emerald-500/40 font-bold',
+                        'interludio': 'bg-cyan-500/25 text-cyan-300 border-cyan-500/40 font-bold',
+                        'drop': 'bg-rose-500/25 text-rose-300 border-rose-500/40 font-black',
+                        'chanteo': 'bg-orange-500/25 text-orange-300 border-orange-500/40 font-bold',
+                        'transicion': 'bg-teal-500/25 text-teal-300 border-teal-500/40 font-bold',
+                        'pauta': 'bg-yellow-500/25 text-yellow-300 border-yellow-500/40 font-bold',
+                        'recitado': 'bg-violet-500/25 text-violet-300 border-violet-500/40 font-bold',
+                        'verso': 'bg-slate-800 text-slate-300 border-slate-700 font-bold'
+                    };
+                    return styles[type] || styles['verso'];
                 }
 
                 function getSessionIcon(type) {
-                    const t = type.toLowerCase();
-                    if (t.includes('coro')) return 'fa-solid fa-users';
-                    if (t.includes('intro') || t.includes('instrumental') || t.includes('solo') || t.includes('interludio') || t.includes('riff') || t.includes('pre-intro')) return 'fa-solid fa-play';
-                    if (t.includes('puente')) return 'fa-solid fa-bridge-water';
-                    if (t.includes('pre-coro') || t.includes('post-coro')) return 'fa-solid fa-arrow-up-right-dots';
-                    if (t.includes('drop')) return 'fa-solid fa-bolt';
-                    if (t.includes('chanteo')) return 'fa-solid fa-microphone';
-                    if (t.includes('dembow')) return 'fa-solid fa-drum';
-                    if (t.includes('shout') || t.includes('pauta')) return 'fa-solid fa-bullhorn';
-                    if (t.includes('spoken') || t.includes('recitado')) return 'fa-solid fa-comment-dots';
-                    return 'fa-solid fa-align-left';
+                    const icons = {
+                        'coro': 'fa-solid fa-users',
+                        'intro': 'fa-solid fa-play',
+                        'puente': 'fa-solid fa-bridge-water',
+                        'pre-coro': 'fa-solid fa-arrow-up-right-dots',
+                        'post-coro': 'fa-solid fa-arrow-down-right-and-arrow-up-left-to-center',
+                        'instrumental': 'fa-solid fa-guitar',
+                        'cierre': 'fa-solid fa-flag-checkered',
+                        'interludio': 'fa-solid fa-hourglass-half',
+                        'drop': 'fa-solid fa-bolt',
+                        'chanteo': 'fa-solid fa-microphone',
+                        'transicion': 'fa-solid fa-shuffle',
+                        'pauta': 'fa-solid fa-bullhorn',
+                        'recitado': 'fa-solid fa-book-open'
+                    };
+                    return icons[type] || 'fa-solid fa-align-left';
                 }
 
                 function parseLineWithChords(line) {
@@ -1370,31 +1149,20 @@
                     const regex = /\[(.*?)\]/g;
                     let lastIdx = 0;
                     let match;
-                    
                     while ((match = regex.exec(line)) !== null) {
                         const chord = match[1];
                         if (match.index > lastIdx) {
                             const pText = line.substring(lastIdx, match.index);
-                            if (pText.trim().length > 0) {
-                                if (items.length > 0 && !items[items.length - 1].text) {
-                                    items[items.length - 1].text = pText;
-                                } else {
-                                    items.push({ chord: '', text: pText });
-                                }
-                            }
+                            if (items.length > 0 && !items[items.length - 1].text) items[items.length - 1].text = pText;
+                            else items.push({ chord: '', text: pText });
                         }
                         items.push({ chord: chord, text: '' });
                         lastIdx = regex.lastIndex;
                     }
                     if (lastIdx < line.length) {
                         const rText = line.substring(lastIdx);
-                        if (rText.trim().length > 0) {
-                            if (items.length > 0 && !items[items.length - 1].text) {
-                                items[items.length - 1].text = rText;
-                            } else {
-                                items.push({ chord: '', text: rText });
-                            }
-                        }
+                        if (items.length > 0 && !items[items.length - 1].text) items[items.length - 1].text = rText;
+                        else items.push({ chord: '', text: rText });
                     }
                     return items;
                 }
@@ -1448,21 +1216,17 @@
                     currentView, searchQuery, selectedCategoryFilter, categories,
                     songs, filteredSongs, activeSong,
                     setlists, activeSetlist, showSetlistModal, newSetlistName,
-                    showSongModal, editingSong, chromaticKeys,
-                    builderSections, availableSessionTypes,
-                    historyIndex, historyStack, recordHistory, undoHistory, redoHistory,
-                    activeAutocompleteIdx, suggestedChordsList,
-                    onSectionInput, onSectionKeyDown, onSectionClick, insertChordAtCursor,
+                    showSongModal, editingSong, chromaticKeys, availableSessionTypes, builderSections,
                     showAddSongModal, addSongSearchQuery, addableSongs, addSongToSetlist,
                     instruments, activeInstrument, semitoneOffset,
                     toastMessage, currentKey, capoSuggestion, parsedSongSections,
                     isAutoScrolling, scrollSpeed, isMetronomeActive,
                     openNewSongModal, editSong, saveSong, confirmDeleteSong, openSong,
                     openSetlistModal, createSetlist, deleteSetlist, selectSetlist,
-                    transpose, transposeChord, getInstrumentName, onKeyChanged,
+                    transpose, transposeChord, getInstrumentName,
                     getSessionContainerStyle, getSessionHeaderBadgeStyle, getSessionIcon,
                     toggleAutoScroll, toggleMetronome, userEmail, loginWithGoogle, volverAlHome,
-                    addNewSection, moveSection, cloneSection, removeSection
+                    addNewSection, moveSection, duplicateSection, removeSection, recordHistory, undoHistory, redoHistory, historyStack, historyIndex
                 };
             }
         }).mount('#app');
