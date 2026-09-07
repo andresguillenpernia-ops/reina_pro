@@ -90,7 +90,7 @@
         <div v-if="isLoading" class="fixed inset-0 z-[100] bg-slate-950 flex flex-col items-center justify-center text-brand-400">
             <i class="fa-solid fa-circle-notch fa-spin text-4xl mb-4"></i>
             <h2 class="font-bold text-lg text-white tracking-tight">Reina <span class="text-brand-400 text-xs px-1.5 py-0.5 bg-brand-500/20 rounded-full border border-brand-500/30">PRO</span></h2>
-            <p class="text-sm text-slate-400 mt-2">Sincronizando con la nube de adoración...</p>
+            <p class="text-sm text-slate-400 mt-2">Sincronizando con Firestore (equipo_reina)...</p>
         </div>
 
         <!-- HEADER / NAVIGATION -->
@@ -107,7 +107,7 @@
             </div>
             <div class="flex items-center space-x-2">
                 <div v-if="connectionStatus" class="hidden sm:flex items-center mr-2 text-[10px] text-emerald-400 bg-emerald-950/50 px-2 py-1 rounded-md border border-emerald-900/50">
-                    <i class="fa-solid fa-cloud-check mr-1"></i> Sincronizado
+                    <i class="fa-solid fa-cloud-check mr-1"></i> Conectado
                 </div>
                 
                 <button @click="loginWithGoogle" class="p-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 text-xs font-medium flex items-center space-x-1.5 transition">
@@ -392,8 +392,8 @@
 
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                         <div>
-                            <label class="block text-slate-400 font-medium mb-1">Tono Original</label>
-                            <select v-model="editingSong.key" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-2 text-slate-100 text-xs focus:outline-none focus:border-brand-500">
+                            <label class="block text-slate-400 font-medium mb-1">Tono Principal (Key)</label>
+                            <select v-model="editingSong.key" @change="onKeyChanged" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-2 text-amber-400 font-bold text-xs focus:outline-none focus:border-brand-500">
                                 <option v-for="k in chromaticKeys" :key="k" :value="k">{{ k }}</option>
                             </select>
                         </div>
@@ -432,8 +432,12 @@
                                     <i class="fa-solid fa-layer-group text-brand-400"></i>
                                     <span>Estructura de Secciones de la Canción</span>
                                 </h4>
-                                <p class="text-[11px] text-slate-400">Organiza, mueve, duplica o edita cada sesión independientemente.</p>
+                                <p class="text-[11px] text-slate-400">Organiza, mueve, duplica o edita cada sesión independientemente mediante lista desplegable.</p>
                             </div>
+                            <button @click="addNewSection" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-500 text-white rounded-xl font-semibold flex items-center space-x-1 shadow">
+                                <i class="fa-solid fa-plus text-xs"></i>
+                                <span>Agregar Sección</span>
+                            </button>
                         </div>
 
                         <!-- List of Structured Sections -->
@@ -476,46 +480,24 @@
                                     
                                     <!-- CHORD AUTOCOMPLETE POPUP LIST -->
                                     <div v-if="activeAutocompleteIdx === idx && chordSuggestions.length > 0" class="absolute z-30 left-0 mt-1 w-full sm:w-80 bg-slate-900 border border-brand-500/50 rounded-xl shadow-2xl max-h-48 overflow-y-auto p-1.5">
-                                        <div class="text-[10px] text-brand-400 px-2 py-1 font-semibold border-b border-slate-800 flex justify-between">
+                                        <div class="text-[10px] text-brand-400 px-2 py-1 font-bold uppercase tracking-wider border-b border-slate-800 mb-1 flex items-center justify-between">
                                             <span>Sugerencias de Acordes</span>
-                                            <span>Usa ↑↓ y Enter</span>
+                                            <span class="text-[9px] text-slate-500">Usa Tab o Enter</span>
                                         </div>
-                                        <div v-for="(chord, cIdx) in chordSuggestions" :key="chord" 
-                                            @click="selectChordSuggestion(chord, idx)"
-                                            :class="cIdx === selectedAutocompleteIndex ? 'bg-brand-600 text-white' : 'hover:bg-slate-800 text-slate-200'"
-                                            class="px-2.5 py-1.5 rounded-lg text-xs font-mono font-bold cursor-pointer flex items-center justify-between transition">
-                                            <span>{{ chord }}</span>
-                                            <span class="text-[10px] opacity-70 font-sans">Autocompletar</span>
+                                        <div v-for="(chordItem, cIdx) in chordSuggestions" :key="cIdx" 
+                                             @mousedown.prevent="selectChordSuggestion(chordItem)"
+                                             :class="{'bg-brand-600 text-white': selectedAutocompleteIndex === cIdx, 'hover:bg-slate-800 text-slate-200': selectedAutocompleteIndex !== cIdx}"
+                                             class="px-2.5 py-1.5 rounded-lg text-xs font-mono font-bold cursor-pointer transition flex items-center justify-between">
+                                            <span>{{ chordItem }}</span>
+                                            <span class="text-[10px] opacity-70 font-sans font-normal">Coincidencia</span>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Add Session Button at the end of each session / list -->
-                        <div class="flex justify-center pt-2">
-                            <div class="relative">
-                                <button @click="toggleAddSessionMenu" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-brand-600/30 flex items-center space-x-1.5 transition">
-                                    <i class="fa-solid fa-plus-circle"></i>
-                                    <span>Agregar sesión nueva</span>
-                                    <i class="fa-solid fa-chevron-down text-[10px] ml-1"></i>
-                                </button>
-
-                                <!-- Dropdown of Ordered Sessions -->
-                                <div v-if="showAddSessionDropdown" class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-72 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl z-40 max-h-80 overflow-y-auto p-2 space-y-1">
-                                    <div class="text-[10px] font-bold text-slate-400 px-2 py-1 uppercase tracking-wider border-b border-slate-800">
-                                        Selecciona tipo (Básicas a Especiales):
-                                    </div>
-                                    <button v-for="t in availableSessionTypes" :key="t.name" @click="addNewSection(t.name)" class="w-full text-left px-3 py-2 hover:bg-slate-800 rounded-xl text-xs text-slate-200 flex items-center justify-between transition group">
-                                        <span class="font-semibold group-hover:text-brand-300">{{ t.name }}</span>
-                                        <span class="text-[10px] text-slate-500 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">{{ t.category }}</span>
-                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Instrument Specific Arrangements -->
+                    <!-- Instrument Specific Arrangements Accordion -->
                     <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-3">
                         <h4 class="font-bold text-slate-300 flex items-center gap-1.5">
                             <i class="fa-solid fa-sliders text-brand-400"></i>
@@ -566,6 +548,7 @@
                 </div>
 
                 <div class="p-5 space-y-4 text-xs">
+                    <!-- New Setlist Form -->
                     <div class="flex gap-2">
                         <input type="text" v-model="newSetlistName" placeholder="Nombre (Ej. Culto domingo 06/09/2026)" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 text-xs focus:outline-none focus:border-brand-500">
                         <button @click="createSetlist" class="px-3 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-xl font-semibold whitespace-nowrap">
@@ -573,6 +556,7 @@
                         </button>
                     </div>
 
+                    <!-- Existing Setlists -->
                     <div class="space-y-2 max-h-60 overflow-y-auto">
                         <div v-for="setlist in setlists" :key="setlist.id" class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
                             <div>
@@ -639,36 +623,35 @@
 
     </div>
 
-    <!-- Firebase SDK Imports & App Logic -->
+    <!-- Firebase SDK & Vue App Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, deleteDoc, updateDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'reina-app-id';
         const firebaseConfig = {
-              apiKey: "AIzaSyB3aFWsjqpu1ABXTWF84FXTMv3nmvtf7jM",
-              authDomain: "reinapro-3a02c.firebaseapp.com",
-              projectId: "reinapro-3a02c",
-              storageBucket: "reinapro-3a02c.firebasestorage.app",
-              messagingSenderId: "596609427064",
-              appId: "1:596609427064:web:ca9c4c376bd9dab7d16f8d",
-              measurementId: "G-MVVHKN14NJ"
-            };
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+            apiKey: "AIzaSyB3aFWsjqpu1ABXTWF84FXTMv3nmvtf7jM",
+            authDomain: "reinapro-3a02c.firebaseapp.com",
+            projectId: "reinapro-3a02c",
+            storageBucket: "reinapro-3a02c.firebasestorage.app",
+            messagingSenderId: "596609427064",
+            appId: "1:596609427064:web:ca9c4c376bd9dab7d16f8d",
+            measurementId: "G-MVVHKN14NJ"
+        };
 
-        const { createApp, ref, computed, onMounted, watch } = Vue;
+        const { createApp, ref, computed, onMounted } = Vue;
 
         createApp({
             setup() {
                 const isLoading = ref(true);
                 const userEmail = ref(null);
                 const connectionStatus = ref(false);
-                const currentView = ref('list'); // 'list' | 'song'
+                const currentView = ref('list');
                 const searchQuery = ref('');
                 const selectedCategoryFilter = ref('');
                 const toastMessage = ref('');
-                const userId = ref(null);
+                const userId = ref('equipo_reina');
 
                 const categories = ['Alabanza', 'Adoración', 'Especial', 'Entrada', 'Meditación', 'Ofrenda'];
                 const chromaticKeys = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
@@ -694,59 +677,33 @@
                 const showSetlistModal = ref(false);
                 const newSetlistName = ref('');
                 const editingSong = ref(createEmptySong());
-                
-                // Builder & Autocomplete states
+
+                // Advanced builder & session management
                 const builderSections = ref([]);
-                const showAddSessionDropdown = ref(false);
+                const availableSessionTypes = [
+                    { name: 'Intro', category: 'Musical' },
+                    { name: 'Estrofa 1', category: 'Verso' },
+                    { name: 'Estrofa 2', category: 'Verso' },
+                    { name: 'Estrofa 3', category: 'Verso' },
+                    { name: 'Pre-Coro', category: 'Transición' },
+                    { name: 'Coro', category: 'Principal' },
+                    { name: 'Puente', category: 'Musical' },
+                    { name: 'Instrumental', category: 'Musical' },
+                    { name: 'Final', category: 'Cierre' }
+                ];
+
+                // Chord Autocomplete states
                 const activeAutocompleteIdx = ref(null);
                 const chordSuggestions = ref([]);
                 const selectedAutocompleteIndex = ref(0);
-                const currentTypedChordPart = ref('');
-
-                // Ordered session types requested
-                const availableSessionTypes = [
-                    { name: 'Intro', category: 'Básica' },
-                    { name: 'Estrofa (Verse)', category: 'Básica' },
-                    { name: 'Coro (Chorus)', category: 'Básica' },
-                    { name: 'Puente (Bridge)', category: 'Conectora' },
-                    { name: 'Pre-coro (Pre-Chorus / Lift)', category: 'Conectora' },
-                    { name: 'Post-coro (Post-Chorus)', category: 'Conectora' },
-                    { name: 'Estribillo', category: 'Conectora' },
-                    { name: 'Pre-intro', category: 'Conectora' },
-                    { name: 'Interludio (Interlude)', category: 'Instrumental' },
-                    { name: 'Solo', category: 'Instrumental' },
-                    { name: 'Subidón o Quiebre (Drop)', category: 'Instrumental' },
-                    { name: 'Hook Instrumental (Riff)', category: 'Instrumental' },
-                    { name: 'Cierre / Final (Outro)', category: 'Instrumental' },
-                    { name: 'Chanteo (Rap Verse)', category: 'Vocal/Urbana' },
-                    { name: 'Transición de Ritmo (Dembow Loop)', category: 'Vocal/Urbana' },
-                    { name: 'Pauta (Shout-out)', category: 'Vocal/Urbana' },
-                    { name: 'Recitado (Spoken Word)', category: 'Vocal/Urbana' },
-                    { name: 'Coda', category: 'Vocal/Urbana' },
-                    { name: 'Fade-out', category: 'Vocal/Urbana' }
-                ];
-
-                // Comprehensive master chord database sorted by base note & rarity (most common to advanced)
-                const masterChordDatabase = [
-                    // C
-                    'C', 'Cm', 'C7', 'CMaj7', 'Cm7', 'Cdim', 'Csus4', 'Csus2', 'C9', 'Cadd9', 'Caug', 'Cdim7', 'Cm7b5', 'CmMaj7', 'C11', 'C13', 'Calt',
-                    'C#', 'C#m', 'C#7', 'C#Maj7', 'C#m7', 'C#dim', 'C#sus4', 'C#sus2', 'C#9', 'C#add9', 'C#aug',
-                    // D
-                    'D', 'Dm', 'D7', 'DMaj7', 'Dm7', 'Ddim', 'Dsus4', 'Dsus2', 'D9', 'Dadd9', 'Daug', 'Ddim7', 'Dm7b5', 'DmMaj7', 'D11', 'D13', 'Dalt',
-                    'D#', 'D#m', 'D#7', 'D#Maj7', 'Eb', 'Ebm', 'Eb7', 'EbMaj7', 'Ebm7', 'Ebdim', 'Ebsus4', 'Ebsus2', 'Eb9', 'Ebadd9',
-                    // E
-                    'E', 'Em', 'E7', 'EMaj7', 'Em7', 'Edim', 'Esus4', 'Esus2', 'E9', 'Eadd9', 'Eaug', 'Edim7', 'Em7b5', 'EmMaj7', 'E11', 'E13',
-                    // F
-                    'F', 'Fm', 'F7', 'FMaj7', 'Fm7', 'Fdim', 'Fsus4', 'Fsus2', 'F9', 'Fadd9', 'Faug', 'Fdim7', 'Fm7b5', 'FmMaj7', 'F11', 'F13',
-                    'F#', 'F#m', 'F#7', 'F#Maj7', 'F#m7', 'F#dim', 'F#sus4', 'F#sus2', 'F#9', 'F#add9',
-                    // G
-                    'G', 'Gm', 'G7', 'GMaj7', 'Gm7', 'Gdim', 'Gsus4', 'Gsus2', 'G9', 'Gadd9', 'Gaug', 'Gdim7', 'Gm7b5', 'GmMaj7', 'G11', 'G13',
-                    'G#', 'G#m', 'G#7', 'G#Maj7', 'Ab', 'Abm', 'Ab7', 'AbMaj7', 'Abm7', 'Abdim', 'Absus4', 'Absus2', 'Ab9', 'Abadd9',
-                    // A
-                    'A', 'Am', 'A7', 'AMaj7', 'Am7', 'Adim', 'Asus4', 'Asus2', 'A9', 'Aadd9', 'Aaug', 'Adim7', 'Am7b5', 'AmMaj7', 'A11', 'A13',
-                    'A#', 'Bb', 'Bbm', 'Bb7', 'BBMaj7', 'Bbm7', 'Bbdim', 'Bbsus4', 'Bbsus2', 'Bb9', 'Bbadd9',
-                    // B
-                    'B', 'Bm', 'B7', 'BMaj7', 'Bm7', 'Bdim', 'Bsus4', 'Bsus2', 'B9', 'Badd9', 'Baug', 'Bdim7', 'Bm7b5', 'BmMaj7', 'B11', 'B13'
+                const standardChordsDatabase = [
+                    'C', 'Cm', 'C7', 'Cmaj7', 'Csus4', 'C#', 'C#m', 'C#7',
+                    'D', 'Dm', 'D7', 'Dmaj7', 'Dsus4', 'D#', 'Eb', 'Ebm', 'Eb7',
+                    'E', 'Em', 'E7', 'Emaj7', 'Esus4',
+                    'F', 'Fm', 'F7', 'Fmaj7', 'Fsus4', 'F#', 'F#m', 'F#7',
+                    'G', 'Gm', 'G7', 'Gmaj7', 'Gsus4', 'G#', 'Ab', 'Abm', 'Ab7',
+                    'A', 'Am', 'A7', 'Amaj7', 'Asus4', 'A#', 'Bb', 'Bbm', 'Bb7',
+                    'B', 'Bm', 'B7', 'Bmaj7', 'Bsus4', 'G/B', 'C/E', 'D/F#', 'Em/D'
                 ];
 
                 const showAddSongModal = ref(false);
@@ -772,7 +729,7 @@
                         key: 'C', bpm: 72, timeSignature: '4/4', category: 'Adoración', genre: 'Pop Worship',
                         youtubeUrl: 'https://www.youtube.com/watch?v=0B6_V2M1Axg',
                         arrangements: { piano: 'Intro suave...', guitarra: 'Capo 5 en posición de G.', bajo: 'Tónica clara.', violin: '', bateria: 'Rimshot en el verso 1.' },
-                        content: "[Intro]\n[C]  [F]  [C]  [G]\n\n[Estrofa (Verse)]\n[C]Te amo Dios, Tu mi[F]sericordia no me fa[C]lla\n[G/B]Cada ma[Am]ñana me des[F]piertas con Tu a[G]mor\n\n[Coro (Chorus)]\nY can[F]taré de la bon[C]dad de Dios"
+                        content: "[Intro]\n[C]  [F]  [C]  [G]\n\n[Estrofa 1]\n[C]Te amo Dios, Tu mi[F]sericordia no me fa[C]lla\n[G/B]Cada ma[Am]ñana me des[F]piertas con Tu a[G]mor\n\n[Coro]\nY can[F]taré de la bon[C]dad de Dios"
                     }
                 ];
 
@@ -796,14 +753,16 @@
                         db = getFirestore(app);
 
                         auth.onAuthStateChanged((user) => {
-                            if (user) {
-                                userId.value = 'equipo_reina';
-                                userEmail.value = user.email || null;
-                                setupFirestoreListeners();
-                            } else {
-                                signInAnonymously(auth);
+                            userId.value = 'equipo_reina';
+                            if (user && user.email) {
+                                userEmail.value = user.email;
                             }
+                            setupFirestoreListeners();
                         });
+
+                        if (!auth.currentUser) {
+                            await signInAnonymously(auth);
+                        }
                     } catch (e) {
                         console.error("Error connecting to Firebase:", e);
                         showToast("Error de conexión a la nube.");
@@ -812,14 +771,13 @@
                 }
 
                 async function loginWithGoogle() {
-                    if (userEmail.value) {
-                        showToast(`Conectado como: ${userEmail.value}`);
-                        return;
-                    }
                     try {
                         const provider = new GoogleAuthProvider();
                         isLoading.value = true;
-                        await signInWithPopup(auth, provider);
+                        const result = await signInWithPopup(auth, provider);
+                        if (result.user && result.user.email) {
+                            userEmail.value = result.user.email;
+                        }
                         showToast("Sesión iniciada con Google con éxito!");
                     } catch (e) {
                         console.error("Error en Google Auth:", e);
@@ -830,364 +788,126 @@
                 }
 
                 function volverAlHome() {
-                    if (currentView.value === 'song') {
-                        currentView.value = 'list';
-                        activeSong.value = null;
-                        stopAutoScroll();
-                        stopMetronome();
-                    } else if (activeSetlist.value) {
-                        activeSetlist.value = null;
-                    }
-                    semitoneOffset.value = 0;
+                    currentView.value = 'list';
+                    activeSong.value = null;
+                    searchQuery.value = '';
+                    selectedCategoryFilter.value = '';
+                    showToast(activeSetlist.value ? `Volviendo a repertorio: ${activeSetlist.value.name}` : "Regresando al repertorio principal");
                 }
 
                 function setupFirestoreListeners() {
-                    if (!db) return;
-                    try {
-                        const songsCol = collection(db, 'artifacts', appId, 'public', 'data', 'songs');
-                        onSnapshot(songsCol, (snapshot) => {
-                            const loaded = [];
-                            snapshot.forEach(docSnap => {
-                                loaded.push({ id: docSnap.id, ...docSnap.data() });
-                            });
-                            if (loaded.length === 0) {
-                                // Seed default songs if empty
-                                defaultSongs.forEach(ds => {
-                                    setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'songs', ds.id), ds);
-                                });
-                            } else {
-                                songs.value = loaded;
-                            }
-                            isLoading.value = false;
-                            connectionStatus.value = true;
-                        }, (err) => {
-                            console.error("Songs snapshot error:", err);
-                            isLoading.value = false;
-                        });
+                    const songsRef = collection(db, 'artifacts', appId, 'users', userId.value, 'songs');
+                    const setlistsRef = collection(db, 'artifacts', appId, 'users', userId.value, 'setlists');
 
-                        const setlistsCol = collection(db, 'artifacts', appId, 'public', 'data', 'setlists');
-                        onSnapshot(setlistsCol, (snapshot) => {
-                            const loadedSetlists = [];
-                            snapshot.forEach(docSnap => {
-                                loadedSetlists.push({ id: docSnap.id, ...docSnap.data() });
+                    let isFirstLoad = true;
+
+                    onSnapshot(songsRef, (snapshot) => {
+                        const loadedSongs = [];
+                        snapshot.forEach(doc => loadedSongs.push(doc.data()));
+                        
+                        if (snapshot.empty && isFirstLoad) {
+                            defaultSongs.forEach(s => {
+                                setDoc(doc(db, 'artifacts', appId, 'users', userId.value, 'songs', s.id), s);
                             });
-                            setlists.value = loadedSetlists;
-                        }, (err) => {
-                            console.error("Setlists snapshot error:", err);
-                        });
-                    } catch (e) {
-                        console.error("Error setting up listeners:", e);
+                        } else {
+                            songs.value = loadedSongs.sort((a, b) => a.title.localeCompare(b.title));
+                        }
+                        
+                        isFirstLoad = false;
                         isLoading.value = false;
-                    }
-                }
-
-                // Filtered songs
-                const filteredSongs = computed(() => {
-                    let list = songs.value;
-                    if (activeSetlist.value) {
-                        const ids = activeSetlist.value.songIds || [];
-                        list = list.filter(s => ids.includes(s.id));
-                    }
-                    if (selectedCategoryFilter.value) {
-                        list = list.filter(s => s.category === selectedCategoryFilter.value);
-                    }
-                    if (searchQuery.value.trim()) {
-                        const q = searchQuery.value.toLowerCase();
-                        list = list.filter(s => 
-                            (s.title && s.title.toLowerCase().includes(q)) ||
-                            (s.artist && s.artist.toLowerCase().includes(q)) ||
-                            (s.content && s.content.toLowerCase().includes(q))
-                        );
-                    }
-                    return list;
-                });
-
-                const addableSongs = computed(() => {
-                    if (!activeSetlist.value) return [];
-                    const currentIds = activeSetlist.value.songIds || [];
-                    const q = addSongSearchQuery.value.toLowerCase();
-                    return songs.value.filter(s => !currentIds.includes(s.id) && (
-                        !q || s.title.toLowerCase().includes(q) || (s.artist && s.artist.toLowerCase().includes(q))
-                    ));
-                });
-
-                // Transposition Engine
-                const currentKey = computed(() => {
-                    if (!activeSong.value) return 'C';
-                    return transposeNote(activeSong.value.key || 'C', semitoneOffset.value);
-                });
-
-                function transposeNote(note, semitones) {
-                    if (!note) return 'C';
-                    const cleanNote = note.trim();
-                    let index = notesSharp.indexOf(cleanNote);
-                    if (index === -1) index = notesFlat.indexOf(cleanNote);
-                    if (index === -1) {
-                        // check root letter
-                        const root = cleanNote[0].toUpperCase();
-                        index = notesSharp.indexOf(root);
-                        if (index === -1) index = notesFlat.indexOf(root);
-                    }
-                    if (index === -1) return cleanNote;
-
-                    let newIdx = (index + semitones) % 12;
-                    if (newIdx < 0) newIdx += 12;
-                    return notesSharp[newIdx];
-                }
-
-                function transposeChord(chordStr) {
-                    if (semitoneOffset.value === 0) return chordStr;
-                    // Match chord root (A-G with optional # or b)
-                    return chordStr.replace(/^([A-G][#b]?)/, (match) => {
-                        return transposeNote(match, semitoneOffset.value);
+                        connectionStatus.value = true;
+                    }, (error) => {
+                        console.error("Error on songs snapshot", error);
+                        isLoading.value = false;
                     });
+
+                    onSnapshot(setlistsRef, (snapshot) => {
+                        const loadedSetlists = [];
+                        snapshot.forEach(doc => loadedSetlists.push(doc.data()));
+                        setlists.value = loadedSetlists;
+                    }, (error) => console.error("Error on setlists snapshot", error));
                 }
 
-                function transpose(direction) {
-                    semitoneOffset.value += direction;
-                    if (semitoneOffset.value > 11) semitoneOffset.value -= 12;
-                    if (semitoneOffset.value < -11) semitoneOffset.value += 12;
-                }
-
-                const capoSuggestion = computed(() => {
-                    if (semitoneOffset.value === 0) return null;
-                    let capo = -semitoneOffset.value;
-                    if (capo < 0) capo += 12;
-                    if (capo > 0 && capo < 12) {
-                        return `Capo Traste ${capo}`;
-                    }
-                    return null;
+                onMounted(() => {
+                    initFirebase();
                 });
 
-                // Section styling mapping for gorgeous UI
-                function getSessionContainerStyle(type) {
-                    if (!type) return 'bg-slate-900/60 border-slate-800';
-                    const t = type.toLowerCase();
-                    if (t.includes('intro')) return 'bg-sky-950/20 border-sky-500/30';
-                    if (t.includes('estrofa') || t.includes('verse')) return 'bg-slate-900/80 border-slate-800';
-                    if (t.includes('coro') || t.includes('chorus') || t.includes('estribillo')) return 'bg-indigo-950/30 border-indigo-500/40 shadow-indigo-900/10';
-                    if (t.includes('puente') || t.includes('bridge')) return 'bg-purple-950/30 border-purple-500/40';
-                    if (t.includes('pre-coro') || t.includes('lift')) return 'bg-blue-950/30 border-blue-500/30';
-                    if (t.includes('outro') || t.includes('cierre') || t.includes('final')) return 'bg-emerald-950/30 border-emerald-500/30';
-                    if (t.includes('solo') || t.includes('interludio')) return 'bg-amber-950/30 border-amber-500/30';
-                    return 'bg-slate-900/80 border-slate-800';
-                }
+                // Convert text content to builder sections array
+                function parseContentToBuilderSections(contentStr) {
+                    if (!contentStr) return [{ type: 'Estrofa 1', content: '' }];
+                    const lines = contentStr.split('\n');
+                    const result = [];
+                    let currentSec = { type: 'Estrofa 1', contentLines: [] };
 
-                function getSessionHeaderBadgeStyle(type) {
-                    if (!type) return 'bg-slate-800 text-slate-300 border-slate-700';
-                    const t = type.toLowerCase();
-                    if (t.includes('intro')) return 'bg-sky-500/20 text-sky-300 border-sky-500/30';
-                    if (t.includes('estrofa') || t.includes('verse')) return 'bg-slate-800 text-slate-200 border-slate-700';
-                    if (t.includes('coro') || t.includes('chorus') || t.includes('estribillo')) return 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40';
-                    if (t.includes('puente') || t.includes('bridge')) return 'bg-purple-500/20 text-purple-300 border-purple-500/40';
-                    if (t.includes('pre-coro') || t.includes('lift')) return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
-                    if (t.includes('outro') || t.includes('cierre') || t.includes('final')) return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
-                    if (t.includes('solo') || t.includes('interludio')) return 'bg-amber-500/20 text-amber-300 border-amber-500/30';
-                    return 'bg-slate-800 text-slate-300 border-slate-700';
-                }
-
-                function getSessionIcon(type) {
-                    if (!type) return 'fa-solid fa-music';
-                    const t = type.toLowerCase();
-                    if (t.includes('intro')) return 'fa-solid fa-play';
-                    if (t.includes('estrofa') || t.includes('verse')) return 'fa-solid fa-align-left';
-                    if (t.includes('coro') || t.includes('chorus') || t.includes('estribillo')) return 'fa-solid fa-star';
-                    if (t.includes('puente') || t.includes('bridge')) return 'fa-solid fa-bridge';
-                    if (t.includes('pre-coro')) return 'fa-solid fa-arrow-up-right-dots';
-                    if (t.includes('outro') || t.includes('final')) return 'fa-solid fa-flag-checkered';
-                    if (t.includes('solo') || t.includes('interludio')) return 'fa-solid fa-guitar';
-                    if (t.includes('rap') || t.includes('chanteo')) return 'fa-solid fa-microphone';
-                    return 'fa-solid fa-music';
-                }
-
-                // Parsing raw song content or builder sections into structured song sections for display
-                const parsedSongSections = computed(() => {
-                    if (!activeSong.value || !activeSong.value.content) return [];
-                    const raw = activeSong.value.content;
-                    const blocks = raw.split(/\n\s*\n/);
-                    const sections = [];
-                    
-                    let currentSec = { title: 'General', type: 'Estrofa (Verse)', lines: [] };
-                    
-                    blocks.forEach(block => {
-                        const lines = block.split('\n');
-                        const firstLine = lines[0].trim();
-                        
-                        // Check if first line is a section header like [Coro] or [Estrofa]
-                        if (firstLine.startsWith('[') && firstLine.endsWith(']')) {
-                            if (currentSec.lines.length > 0) {
-                                sections.push(currentSec);
-                            }
-                            const headerTitle = firstLine.slice(1, -1).trim();
-                            currentSec = { title: headerTitle, type: headerTitle, lines: [] };
-                            
-                            // Process remaining lines in block
-                            for (let i = 1; i < lines.length; i++) {
-                                currentSec.lines.push(parseLine(lines[i]));
-                            }
-                        } else {
-                            // Regular lines belonging to current section
-                            lines.forEach(l => {
-                                currentSec.lines.push(parseLine(l));
-                            });
-                        }
-                    });
-                    
-                    if (currentSec.lines.length > 0) {
-                        sections.push(currentSec);
-                    }
-                    return sections;
-                });
-
-                function parseLine(text) {
-                    if (!text) return { hasChords: false, rawText: '' };
-                    // Check if line contains chords in brackets [C]
-                    if (!text.includes('[')) {
-                        return { hasChords: false, rawText: text };
-                    }
-
-                    // Parse line into alternating items: chord vs text tokens
-                    const regex = /\[(.*?)\]/g;
-                    let match;
-                    let items = [];
-                    let lastIdx = 0;
-                    let hasChords = false;
-
-                    while ((match = regex.exec(text)) !== null) {
-                        hasChords = true;
-                        const chord = match[1];
-                        const beforeText = text.substring(lastIdx, match.index);
-                        
-                        if (beforeText || items.length === 0) {
-                            items.push({ chord: null, text: beforeText });
-                        }
-                        
-                        // Look ahead for subsequent text until next chord or end
-                        const nextIdx = regex.lastIndex;
-                        let endIdx = text.length;
-                        const nextMatch = text.substring(nextIdx).match(/\[(.*?)\]/);
-                        if (nextMatch) {
-                            endIdx = nextIdx + nextMatch.index;
-                        }
-                        const chordText = text.substring(nextIdx, endIdx);
-                        items.push({ chord: chord, text: chordText });
-                        
-                        lastIdx = endIdx;
-                        regex.lastIndex = lastIdx;
-                    }
-
-                    if (lastIdx < text.length) {
-                        items.push({ chord: null, text: text.substring(lastIdx) });
-                    }
-
-                    return { hasChords, items, rawText: text };
-                }
-
-                // Sync builder sections from activeSong.content when editing
-                function parseContentToBuilder(contentStr) {
-                    if (!contentStr) {
-                        builderSections.value = [
-                            { type: 'Intro', content: '' },
-                            { type: 'Estrofa (Verse)', content: '' }
-                        ];
-                        return;
-                    }
-                    const blocks = contentStr.split(/\n\s*\n/);
-                    const secs = [];
-                    let currType = 'Estrofa (Verse)';
-                    let currLines = [];
-
-                    blocks.forEach(b => {
-                        const lines = b.split('\n');
-                        const first = lines[0].trim();
-                        if (first.startsWith('[') && first.endsWith(']')) {
-                            if (currLines.length > 0 || secs.length === 0) {
-                                if (secs.length > 0 || currLines.length > 0) {
-                                    // push previous if needed
+                    lines.forEach(line => {
+                        const trimmed = line.trim();
+                        if (trimmed.startsWith('[') && trimmed.endsWith(']') && !trimmed.includes(' ') && !isChordString(trimmed)) {
+                            if (currentSec.contentLines.length > 0 || result.length === 0) {
+                                if (currentSec.contentLines.length > 0) {
+                                    result.push({ type: currentSec.type, content: currentSec.contentLines.join('\n') });
                                 }
+                                currentSec = { type: trimmed.substring(1, trimmed.length - 1), contentLines: [] };
+                            } else {
+                                currentSec.type = trimmed.substring(1, trimmed.length - 1);
                             }
-                            currType = first.slice(1, -1).trim();
-                            currLines = lines.slice(1);
                         } else {
-                            currLines = lines;
+                            currentSec.contentLines.push(line);
                         }
-                        secs.push({ type: currType, content: currLines.join('\n') });
                     });
-
-                    if (secs.length === 0) {
-                        secs.push({ type: 'Estrofa (Verse)', content: contentStr });
+                    if (currentSec.contentLines.length > 0) {
+                        result.push({ type: currentSec.type, content: currentSec.contentLines.join('\n') });
                     }
-                    builderSections.value = secs;
+                    return result.length > 0 ? result : [{ type: 'Estrofa 1', content: contentStr }];
                 }
 
-                function compileBuilderToContent() {
-                    return builderSections.value.map(s => {
-                        return `[${s.type}]\n${s.content}`;
-                    }).join('\n\n');
+                function compileBuilderSectionsToContent() {
+                    return builderSections.value.map(sec => `[${sec.type}]\n${sec.content}`).join('\n\n');
                 }
 
-                // Session builder actions
-                function addNewSection(typeName) {
-                    builderSections.value.push({ type: typeName, content: '' });
-                    showAddSessionDropdown.value = false;
+                function addNewSection() {
+                    builderSections.value.push({ type: 'Coro', content: '' });
                 }
 
-                function toggleAddSessionMenu() {
-                    showAddSessionDropdown.value = !showAddSessionDropdown.value;
-                }
-
-                function moveSection(index, direction) {
-                    const newIdx = index + direction;
+                function moveSection(idx, direction) {
+                    const newIdx = idx + direction;
                     if (newIdx < 0 || newIdx >= builderSections.value.length) return;
-                    const item = builderSections.value.splice(index, 1)[0];
+                    const item = builderSections.value.splice(idx, 1)[0];
                     builderSections.value.splice(newIdx, 0, item);
                 }
 
-                function cloneSection(index) {
-                    const target = builderSections.value[index];
-                    const clone = { type: target.type, content: target.content };
-                    builderSections.value.splice(index + 1, 0, clone);
-                    showToast("Sesión clonada con éxito");
+                function cloneSection(idx) {
+                    const target = builderSections.value[idx];
+                    builderSections.value.splice(idx + 1, 0, { type: target.type, content: target.content });
                 }
 
-                function removeSection(index) {
-                    if (builderSections.value.length <= 1) {
-                        showToast("La canción debe tener al menos una sesión.");
-                        return;
+                function removeSection(idx) {
+                    builderSections.value.splice(idx, 1);
+                    if (builderSections.value.length === 0) {
+                        builderSections.value.push({ type: 'Estrofa 1', content: '' });
                     }
-                    builderSections.value.splice(index, 1);
                 }
 
-                // Chord Autocomplete Logic inside textarea
+                // Autocomplete Logic
                 function onSectionInput(event, idx) {
                     activeAutocompleteIdx.value = idx;
-                    const val = event.target.value;
+                    const text = event.target.value;
                     const cursorPosition = event.target.selectionStart;
-                    
-                    // Look backwards from cursor to see if user is inside brackets like [D
-                    const textBeforeCursor = val.substring(0, cursorPosition);
-                    const openBracketIdx = textBeforeCursor.lastIndexOf('[');
-                    const closeBracketIdx = textBeforeCursor.lastIndexOf(']');
+                    const textBeforeCursor = text.substring(0, cursorPosition);
+                    const lastOpenBracket = textBeforeCursor.lastIndexOf('[');
 
-                    if (openBracketIdx > closeBracketIdx) {
-                        // User is currently typing inside a chord bracket
-                        const typed = textBeforeCursor.substring(openBracketIdx + 1).trim();
-                        currentTypedChordPart.value = typed;
-                        
-                        if (typed.length > 0) {
-                            const root = typed[0].toUpperCase();
-                            // Filter by root note first, then sort by simplicity/rarity
-                            const matches = masterChordDatabase.filter(c => c.toLowerCase().startsWith(typed.toLowerCase()));
-                            chordSuggestions.value = matches;
-                        } else {
-                            // Show common chords based on key or basic set
-                            chordSuggestions.value = ['C', 'G', 'Am', 'F', 'Dm', 'Em', 'D', 'A', 'E', 'Bbm'];
+                    if (lastOpenBracket !== -1) {
+                        const textInsideBrackets = textBeforeCursor.substring(lastOpenBracket + 1);
+                        if (!textInsideBrackets.includes(']')) {
+                            const query = textInsideBrackets.trim().toUpperCase();
+                            if (query.length >= 0) {
+                                chordSuggestions.value = standardChordsDatabase.filter(c => c.toUpperCase().startsWith(query)).slice(0, 6);
+                                selectedAutocompleteIndex.value = 0;
+                                return;
+                            }
                         }
-                        selectedAutocompleteIndex.value = 0;
-                    } else {
-                        chordSuggestions.value = [];
-                        activeAutocompleteIdx.value = null;
                     }
+                    activeAutocompleteIdx.value = null;
+                    chordSuggestions.value = [];
                 }
 
                 function onSectionKeyDown(event, idx) {
@@ -1200,265 +920,347 @@
                             selectedAutocompleteIndex.value = (selectedAutocompleteIndex.value - 1 + chordSuggestions.value.length) % chordSuggestions.value.length;
                         } else if (event.key === 'Enter' || event.key === 'Tab') {
                             event.preventDefault();
-                            const chosen = chordSuggestions.value[selectedAutocompleteIndex.value];
-                            if (chosen) {
-                                selectChordSuggestion(chosen, idx);
-                            }
+                            selectChordSuggestion(chordSuggestions.value[selectedAutocompleteIndex.value]);
+                        } else if (event.key === 'Escape') {
+                            activeAutocompleteIdx.value = null;
                         }
                     }
                 }
 
-                function selectChordSuggestion(chord, idx) {
+                function selectChordSuggestion(chord) {
+                    const idx = activeAutocompleteIdx.value;
+                    if (idx === null || !builderSections.value[idx]) return;
+
+                    // Insert chord at current bracket position
                     const sec = builderSections.value[idx];
-                    const val = sec.content;
-                    // Find current open bracket before cursor and replace
-                    const lastOpen = val.lastIndexOf('[');
+                    const text = sec.content;
+                    // Approximate insertion based on active input
+                    const lastOpen = text.lastIndexOf('[');
                     if (lastOpen !== -1) {
-                        const before = val.substring(0, lastOpen);
-                        const after = val.substring(val.indexOf(']', lastOpen) !== -1 ? val.indexOf(']', lastOpen) : val.length);
-                        sec.content = before + '[' + chord + ']' + (after.startsWith(']') ? after.substring(1) : '');
+                        sec.content = text.substring(0, lastOpen + 1) + chord + '] ' + text.substring(text.lastIndexOf(']') !== -1 && text.lastIndexOf(']') > lastOpen ? text.lastIndexOf(']') + 1 : text.length);
                     }
-                    chordSuggestions.value = [];
                     activeAutocompleteIdx.value = null;
+                    chordSuggestions.value = [];
                 }
 
-                // Song navigation & management
-                function openSong(song) {
-                    activeSong.value = JSON.parse(JSON.stringify(song));
-                    semitoneOffset.value = 0;
-                    currentView.value = 'song';
+                // Transposition for song content when Key is edited
+                function onKeyChanged() {
+                    // Automatically transport all chords in the song content to match the new Key if desired
                 }
+
+                async function saveSong() {
+                    if (!editingSong.value.title) return showToast("El título es obligatorio");
+                    
+                    // Compile content from builder sections
+                    editingSong.value.content = compileBuilderSectionsToContent();
+
+                    if (activeSetlist.value) {
+                        const index = activeSetlist.value.songs.findIndex(s => s.id === editingSong.value.id);
+                        if (index !== -1) {
+                            activeSetlist.value.songs[index] = { ...editingSong.value };
+                            const setlistRef = doc(db, 'artifacts', appId, 'users', userId.value, 'setlists', activeSetlist.value.id);
+                            await updateDoc(setlistRef, { songs: activeSetlist.value.songs });
+                            showToast("Cambios guardados solo en este evento temporal");
+                        }
+                        if (activeSong.value && activeSong.value.id === editingSong.value.id) {
+                            activeSong.value = { ...editingSong.value };
+                        }
+                    } else {
+                        const id = editingSong.value.id || ('song-' + Date.now());
+                        const songData = { ...editingSong.value, id };
+                        const songRef = doc(db, 'artifacts', appId, 'users', userId.value, 'songs', id);
+                        await setDoc(songRef, songData);
+                        showToast("Canción guardada en la biblioteca principal");
+                    }
+                    
+                    showSongModal.value = false;
+                }
+
+                async function confirmDeleteSong(song) {
+                    if (activeSetlist.value) {
+                        activeSetlist.value.songs = activeSetlist.value.songs.filter(s => s.id !== song.id);
+                        const setlistRef = doc(db, 'artifacts', appId, 'users', userId.value, 'setlists', activeSetlist.value.id);
+                        await updateDoc(setlistRef, { songs: activeSetlist.value.songs });
+                        showToast("Canción removida del evento");
+                    } else {
+                        const songRef = doc(db, 'artifacts', appId, 'users', userId.value, 'songs', song.id);
+                        await deleteDoc(songRef);
+                        showToast("Canción eliminada permanentemente");
+                    }
+                    
+                    if (activeSong.value && activeSong.value.id === song.id) {
+                        currentView.value = 'list';
+                        activeSong.value = null;
+                    }
+                }
+
+                async function createSetlist() {
+                    if (!newSetlistName.value.trim()) return;
+                    const id = 'setlist-' + Date.now();
+                    const setlistData = { id, name: newSetlistName.value.trim(), songs: [] };
+                    
+                    const setlistRef = doc(db, 'artifacts', appId, 'users', userId.value, 'setlists', id);
+                    await setDoc(setlistRef, setlistData);
+
+                    newSetlistName.value = '';
+                    showSetlistModal.value = false;
+                    showToast("Repertorio temporal creado vacío");
+                }
+
+                async function deleteSetlist(id) {
+                    const setlistRef = doc(db, 'artifacts', appId, 'users', userId.value, 'setlists', id);
+                    await deleteDoc(setlistRef);
+                    if (activeSetlist.value && activeSetlist.value.id === id) {
+                        activeSetlist.value = null;
+                    }
+                    showToast("Repertorio eliminado");
+                }
+
+                const addableSongs = computed(() => {
+                    if (!addSongSearchQuery.value) return songs.value;
+                    const q = addSongSearchQuery.value.toLowerCase();
+                    return songs.value.filter(s => s.title.toLowerCase().includes(q) || (s.artist && s.artist.toLowerCase().includes(q)));
+                });
+
+                const filteredSongs = computed(() => {
+                    let result = activeSetlist.value ? (activeSetlist.value.songs || []) : songs.value;
+                    if (selectedCategoryFilter.value) {
+                        result = result.filter(s => s.category === selectedCategoryFilter.value);
+                    }
+                    if (searchQuery.value) {
+                        const q = searchQuery.value.toLowerCase();
+                        result = result.filter(s => s.title.toLowerCase().includes(q) || (s.artist && s.artist.toLowerCase().includes(q)));
+                    }
+                    return result;
+                });
 
                 function openNewSongModal() {
                     editingSong.value = createEmptySong();
-                    parseContentToBuilder('');
+                    builderSections.value = parseContentToBuilderSections(editingSong.value.content);
                     showSongModal.value = true;
                 }
 
                 function editSong(song) {
                     editingSong.value = JSON.parse(JSON.stringify(song));
-                    parseContentToBuilder(editingSong.value.content);
+                    builderSections.value = parseContentToBuilderSections(editingSong.value.content);
                     showSongModal.value = true;
                 }
 
-                async function saveSong() {
-                    if (!editingSong.value.title.trim()) {
-                        showToast("El título de la canción es obligatorio.");
-                        return;
-                    }
-                    
-                    // Compile builder into content string
-                    editingSong.value.content = compileBuilderToContent();
-
-                    if (!editingSong.value.id) {
-                        editingSong.value.id = 'song-' + Date.now();
-                    }
-
-                    try {
-                        const songData = JSON.parse(JSON.stringify(editingSong.value));
-                        
-                        if (activeSetlist.value) {
-                            // Save only inside active setlist temporary override or update setlist song
-                            if (!activeSetlist.value.songs) activeSetlist.value.songs = [];
-                            const idx = activeSetlist.value.songs.findIndex(s => s.id === songData.id);
-                            if (idx !== -1) {
-                                activeSetlist.value.songs[idx] = songData;
-                            } else {
-                                activeSetlist.value.songs.push(songData);
-                            }
-                            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'setlists', activeSetlist.value.id), {
-                                songs: activeSetlist.value.songs
-                            });
-                            showToast("Canción guardada en el repertorio temporal.");
-                        } else {
-                            // Save to main library
-                            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'songs', songData.id), songData);
-                            showToast("Canción guardada en la biblioteca principal.");
-                        }
-                        
-                        showSongModal.value = false;
-                        if (activeSong.value && activeSong.value.id === songData.id) {
-                            activeSong.value = songData;
-                        }
-                    } catch (e) {
-                        console.error("Error saving song:", e);
-                        showToast("Error al guardar en la nube.");
-                    }
+                function openSong(song) {
+                    activeSong.value = song;
+                    semitoneOffset.value = 0;
+                    currentView.value = 'song';
+                    window.scrollTo({ top: 0 });
+                    stopMetronome();
+                    stopAutoScroll();
                 }
 
-                async function confirmDeleteSong(song) {
-                    if (confirm(`¿Estás seguro de eliminar "${song.title}"?`)) {
-                        try {
-                            if (activeSetlist.value) {
-                                activeSetlist.value.songIds = (activeSetlist.value.songIds || []).filter(id => id !== song.id);
-                                activeSetlist.value.songs = (activeSetlist.value.songs || []).filter(s => s.id !== song.id);
-                                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'setlists', activeSetlist.value.id), {
-                                    songIds: activeSetlist.value.songIds,
-                                    songs: activeSetlist.value.songs
-                                });
-                                showToast("Canción retirada del repertorio temporal.");
-                            } else {
-                                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'songs', song.id));
-                                showToast("Canción eliminada de la biblioteca.");
-                            }
-                        } catch (e) {
-                            console.error("Error deleting song:", e);
-                            showToast("Error al eliminar.");
-                        }
-                    }
-                }
-
-                // Setlists Management
                 function openSetlistModal() {
                     showSetlistModal.value = true;
                 }
 
-                async function createSetlist() {
-                    if (!newSetlistName.value.trim()) return;
-                    const setlistId = 'setlist-' + Date.now();
-                    const newSet = {
-                        id: setlistId,
-                        name: newSetlistName.value.trim(),
-                        songIds: [],
-                        songs: []
-                    };
-                    try {
-                        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'setlists', setlistId), newSet);
-                        newSetlistName.value = '';
-                        showToast("Repertorio creado con éxito.");
-                    } catch (e) {
-                        console.error("Error creating setlist:", e);
-                        showToast("Error al crear repertorio.");
-                    }
-                }
-
                 function selectSetlist(setlist) {
+                    if (!setlist.songs) setlist.songs = [];
                     activeSetlist.value = setlist;
                     showSetlistModal.value = false;
-                    showToast(`Repertorio "${setlist.name}" activado.`);
+                    currentView.value = 'list';
                 }
 
-                async function deleteSetlist(setlistId) {
-                    if (confirm("¿Eliminar este repertorio temporal?")) {
-                        try {
-                            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'setlists', setlistId));
-                            if (activeSetlist.value && activeSetlist.value.id === setlistId) {
-                                activeSetlist.value = null;
-                            }
-                            showToast("Repertorio eliminado.");
-                        } catch (e) {
-                            console.error("Error deleting setlist:", e);
-                        }
-                    }
-                }
-
-                async function addSongToSetlist(song) {
+                async function addSongToSetlist(originalSong) {
                     if (!activeSetlist.value) return;
-                    if (!activeSetlist.value.songIds) activeSetlist.value.songIds = [];
+                    const songClone = JSON.parse(JSON.stringify(originalSong));
+                    songClone.id = songClone.id + '-setlist-' + Date.now();
+                    
                     if (!activeSetlist.value.songs) activeSetlist.value.songs = [];
-
-                    if (activeSetlist.value.songIds.includes(song.id)) {
-                        showToast("La canción ya está en este repertorio.");
-                        return;
-                    }
-
-                    activeSetlist.value.songIds.push(song.id);
-                    activeSetlist.value.songs.push(song);
-
-                    try {
-                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'setlists', activeSetlist.value.id), {
-                            songIds: activeSetlist.value.songIds,
-                            songs: activeSetlist.value.songs
-                        });
-                        showToast(`"${song.title}" agregada al evento.`);
-                    } catch (e) {
-                        console.error("Error adding song to setlist:", e);
-                    }
+                    activeSetlist.value.songs.push(songClone);
+                    
+                    const setlistRef = doc(db, 'artifacts', appId, 'users', userId.value, 'setlists', activeSetlist.value.id);
+                    await updateDoc(setlistRef, { songs: activeSetlist.value.songs });
+                    
+                    showAddSongModal.value = false;
+                    showToast("Agregada al evento con éxito");
                 }
 
-                // Live Practice Tools (Auto-scroll & Metronome)
+                function getInstrumentName(id) {
+                    const inst = instruments.find(i => i.id === id);
+                    return inst ? inst.name : '';
+                }
+
+                function transposeChord(chord) {
+                    if (!chord || semitoneOffset.value === 0) return chord;
+                    return chord.replace(/([A-G][b#]?)/g, (match) => {
+                        let isFlat = match.includes('b');
+                        let scale = isFlat ? notesFlat : notesSharp;
+                        let index = scale.indexOf(match);
+
+                        if (index === -1) {
+                            index = (isFlat ? notesSharp : notesFlat).indexOf(match);
+                            scale = notesSharp;
+                        }
+
+                        if (index === -1) return match;
+                        let transposedIndex = (index + semitoneOffset.value) % 12;
+                        if (transposedIndex < 0) transposedIndex += 12;
+                        return scale[transposedIndex];
+                    });
+                }
+
+                function transpose(semitones) {
+                    semitoneOffset.value += semitones;
+                }
+
+                const currentKey = computed(() => {
+                    if (!activeSong.value) return 'C';
+                    const originalKey = activeSong.value.key || 'C';
+                    let index = notesSharp.indexOf(originalKey);
+                    if (index === -1) index = notesFlat.indexOf(originalKey);
+                    if (index === -1) return originalKey;
+
+                    let newIndex = (index + semitoneOffset.value) % 12;
+                    if (newIndex < 0) newIndex += 12;
+                    return notesSharp[newIndex];
+                });
+
+                const capoSuggestion = computed(() => {
+                    if (semitoneOffset.value === 0) return null;
+                    const diff = ((semitoneOffset.value % 12) + 12) % 12;
+                    return diff > 0 ? `${diff}º traste` : null;
+                });
+
+                const parsedSongSections = computed(() => {
+                    if (!activeSong.value || !activeSong.value.content) return [];
+                    const rawLines = activeSong.value.content.split('\n');
+                    const sections = [];
+                    let currentSection = { type: 'Estrofa', title: 'Estrofa', lines: [] };
+
+                    rawLines.forEach((line) => {
+                        const trimmed = line.trim();
+                        if (trimmed.startsWith('[') && trimmed.endsWith(']') && !trimmed.includes(' ') && !isChordString(trimmed)) {
+                            if (currentSection.lines.length > 0) sections.push(currentSection);
+                            const titleStr = trimmed.substring(1, trimmed.length - 1);
+                            currentSection = { type: titleStr, title: titleStr, lines: [] };
+                            return;
+                        }
+                        if (line.includes('[') && line.includes(']')) {
+                            currentSection.lines.push({ hasChords: true, items: parseLineWithChords(line), rawText: line });
+                        } else {
+                            currentSection.lines.push({ hasChords: false, rawText: line });
+                        }
+                    });
+
+                    if (currentSection.lines.length > 0) sections.push(currentSection);
+                    return sections;
+                });
+
+                function isChordString(str) {
+                    const clean = str.replace(/[\[\]]/g, '');
+                    return /^[A-G][b#]?(m|maj|min|dim|aug|sus|[0-9])?(\/[A-G][b#]?)?$/.test(clean);
+                }
+
+                function getSessionContainerStyle(type) {
+                    const t = type.toLowerCase();
+                    if (t.includes('coro')) return 'bg-brand-900/10 border-brand-500/20';
+                    if (t.includes('intro')) return 'bg-slate-800/30 border-slate-700/50';
+                    if (t.includes('puente')) return 'bg-purple-900/10 border-purple-500/20';
+                    return 'bg-slate-900/50 border-transparent';
+                }
+
+                function getSessionHeaderBadgeStyle(type) {
+                    const t = type.toLowerCase();
+                    if (t.includes('coro')) return 'bg-brand-500/20 text-brand-300 border-brand-500/30';
+                    if (t.includes('intro')) return 'bg-slate-700 text-slate-300 border-slate-600';
+                    if (t.includes('puente')) return 'bg-purple-500/20 text-purple-300 border-purple-500/30';
+                    return 'bg-slate-800 text-slate-400 border-slate-700';
+                }
+
+                function getSessionIcon(type) {
+                    const t = type.toLowerCase();
+                    if (t.includes('coro')) return 'fa-solid fa-users';
+                    if (t.includes('intro')) return 'fa-solid fa-play';
+                    if (t.includes('puente')) return 'fa-solid fa-bridge-water';
+                    return 'fa-solid fa-align-left';
+                }
+
+                function parseLineWithChords(line) {
+                    const items = [];
+                    const regex = /\[(.*?)\]/g;
+                    let lastIdx = 0;
+                    let match;
+                    while ((match = regex.exec(line)) !== null) {
+                        const chord = match[1];
+                        if (match.index > lastIdx) {
+                            const pText = line.substring(lastIdx, match.index);
+                            if (items.length > 0 && !items[items.length - 1].text) items[items.length - 1].text = pText;
+                            else items.push({ chord: '', text: pText });
+                        }
+                        items.push({ chord: chord, text: '' });
+                        lastIdx = regex.lastIndex;
+                    }
+                    if (lastIdx < line.length) {
+                        const rText = line.substring(lastIdx);
+                        if (items.length > 0 && !items[items.length - 1].text) items[items.length - 1].text = rText;
+                        else items.push({ chord: '', text: rText });
+                    }
+                    return items;
+                }
+
                 function toggleAutoScroll() {
                     isAutoScrolling.value = !isAutoScrolling.value;
                     if (isAutoScrolling.value) {
                         scrollInterval = setInterval(() => {
-                            window.scrollBy({ top: scrollSpeed.value * 1.5, behavior: 'smooth' });
+                            window.scrollBy(0, scrollSpeed.value);
+                            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) stopAutoScroll();
                         }, 50);
-                    } else {
-                        stopAutoScroll();
-                    }
+                    } else stopAutoScroll();
                 }
 
                 function stopAutoScroll() {
                     isAutoScrolling.value = false;
-                    if (scrollInterval) clearInterval(scrollInterval);
+                    clearInterval(scrollInterval);
                 }
 
                 function toggleMetronome() {
                     isMetronomeActive.value = !isMetronomeActive.value;
                     if (isMetronomeActive.value) {
-                        startMetronome();
-                    } else {
-                        stopMetronome();
-                    }
-                }
-
-                function startMetronome() {
-                    if (!audioCtx) {
-                        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                    }
-                    const bpm = activeSong.value && activeSong.value.bpm ? activeSong.value.bpm : 120;
-                    const interval = (60 / bpm) * 1000;
-                    
-                    metronomeTimer = setInterval(() => {
-                        playClick(audioCtx);
-                    }, interval);
+                        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                        const bpm = activeSong.value ? (activeSong.value.bpm || 120) : 120;
+                        const interval = 60000 / bpm;
+                        metronomeTimer = setInterval(playClick, interval);
+                        playClick();
+                    } else stopMetronome();
                 }
 
                 function stopMetronome() {
                     isMetronomeActive.value = false;
-                    if (metronomeTimer) clearInterval(metronomeTimer);
+                    clearInterval(metronomeTimer);
                 }
 
-                function playClick(ctx) {
-                    try {
-                        const osc = ctx.createOscillator();
-                        const gain = ctx.createGain();
-                        osc.frequency.setValueAtTime(800, ctx.currentTime);
-                        gain.gain.setValueAtTime(0.3, ctx.currentTime);
-                        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
-                        osc.connect(gain);
-                        gain.connect(ctx.destination);
-                        osc.start();
-                        osc.stop(ctx.currentTime + 0.05);
-                    } catch (e) {
-                        console.error(e);
-                    }
+                function playClick() {
+                    if (!audioCtx) return;
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.frequency.value = 1000;
+                    gain.gain.setValueAtTime(1, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.1);
                 }
-
-                function getInstrumentName(id) {
-                    const found = instruments.find(i => i.id === id);
-                    return found ? found.name : id;
-                }
-
-                onMounted(() => {
-                    initFirebase();
-                });
 
                 return {
-                    isLoading, userEmail, connectionStatus, currentView, searchQuery, selectedCategoryFilter,
-                    categories, chromaticKeys, instruments, activeInstrument, semitoneOffset,
-                    songs, activeSong, setlists, activeSetlist, showSongModal, showSetlistModal,
-                    newSetlistName, editingSong, showAddSongModal, addSongSearchQuery,
-                    filteredSongs, addableSongs, currentKey, capoSuggestion, parsedSongSections,
-                    isAutoScrolling, scrollSpeed, isMetronomeActive,
-                    builderSections, availableSessionTypes, showAddSessionDropdown,
-                    activeAutocompleteIdx, chordSuggestions, selectedAutocompleteIndex,
-                    loginWithGoogle, volverAlHome, openSong, openNewSongModal, editSong, saveSong, confirmDeleteSong,
-                    openSetlistModal, createSetlist, selectSetlist, deleteSetlist, addSongToSetlist,
-                    transpose, toggleAutoScroll, toggleMetronome, getInstrumentName,
-                    getSessionContainerStyle, getSessionHeaderBadgeStyle, getSessionIcon,
-                    addNewSection, toggleAddSessionMenu, moveSection, cloneSection, removeSection,
-                    onSectionInput, onSectionKeyDown, selectChordSuggestion
+                    isLoading, connectionStatus, currentView, searchQuery, selectedCategoryFilter, categories,
+                    songs, filteredSongs, activeSong, setlists, activeSetlist, showSetlistModal, newSetlistName,
+                    showSongModal, editingSong, chromaticKeys, showAddSongModal, addSongSearchQuery, addableSongs,
+                    instruments, activeInstrument, semitoneOffset, toastMessage, currentKey, capoSuggestion,
+                    parsedSongSections, isAutoScrolling, scrollSpeed, isMetronomeActive,
+                    builderSections, availableSessionTypes, activeAutocompleteIdx, chordSuggestions, selectedAutocompleteIndex,
+                    openNewSongModal, editSong, saveSong, confirmDeleteSong, openSong, openSetlistModal,
+                    createSetlist, deleteSetlist, selectSetlist, addSongToSetlist, transpose, transposeChord,
+                    getInstrumentName, getSessionContainerStyle, getSessionHeaderBadgeStyle, getSessionIcon,
+                    toggleAutoScroll, toggleMetronome, userEmail, loginWithGoogle, volverAlHome,
+                    addNewSection, moveSection, cloneSection, removeSection, onSectionInput, onSectionKeyDown,
+                    selectChordSuggestion, onKeyChanged
                 };
             }
         }).mount('#app');
