@@ -71,9 +71,9 @@
             color: #38bdf8;
             background-color: rgba(56, 189, 248, 0.12);
             border: 1px solid rgba(56, 189, 248, 0.25);
-            padding: 1px 4px;
+            padding: 1px 6px;
             border-radius: 4px;
-            margin-right: 0px;
+            margin-right: 2px;
         }
     </style>
 </head>
@@ -128,6 +128,7 @@
             <!-- SONG LIST VIEW -->
             <div v-if="currentView === 'list'" class="space-y-4">
                 
+                <!-- Search & Filters Bar -->
                 <div class="bg-slate-900 p-3 sm:p-4 rounded-2xl border border-slate-800 shadow-md space-y-3">
                     <div class="relative">
                         <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-500"></i>
@@ -145,6 +146,7 @@
                     </div>
                 </div>
 
+                <!-- Active Setlist Banner -->
                 <div v-if="activeSetlist" class="bg-gradient-to-r from-brand-900/60 to-purple-900/60 border border-brand-500/30 p-3 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                     <div class="flex items-center space-x-2">
                         <i class="fa-solid fa-bookmark text-brand-400"></i>
@@ -207,6 +209,7 @@
                     </div>
                 </div>
 
+                <!-- Empty State -->
                 <div v-else class="text-center py-12 bg-slate-900/50 rounded-2xl border border-dashed border-slate-800 p-6">
                     <i class="fa-solid fa-music text-4xl text-slate-700 mb-3 block"></i>
                     <h3 class="text-base font-semibold text-slate-300">No hay canciones en esta vista</h3>
@@ -223,6 +226,7 @@
             <!-- SONG PERFORMANCE VIEW -->
             <div v-if="currentView === 'song' && activeSong" class="space-y-4 flex-1 flex flex-col">
                 
+                <!-- Song Metadata Banner -->
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg space-y-3">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div>
@@ -241,6 +245,7 @@
                             <p class="text-xs sm:text-sm text-slate-400 font-medium"><i class="fa-solid fa-microphone-lines text-slate-500 mr-1"></i>{{ activeSong.artist }}</p>
                         </div>
 
+                        <!-- Action Buttons -->
                         <div class="flex items-center space-x-1.5 self-end sm:self-center">
                             <a v-if="activeSong.youtubeUrl" :href="activeSong.youtubeUrl" target="_blank" class="px-2.5 py-1.5 bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/30 rounded-lg text-xs font-medium flex items-center space-x-1 transition">
                                 <i class="fa-brands fa-youtube text-red-500"></i>
@@ -256,8 +261,10 @@
                         </div>
                     </div>
 
+                    <!-- TRANSPOSITION & INSTRUMENT CONTROLS BAR -->
                     <div class="pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
                         
+                        <!-- Transposer Controls -->
                         <div class="flex items-center space-x-2 bg-slate-950 p-1.5 rounded-xl border border-slate-800">
                             <span class="text-slate-400 font-semibold px-1"><i class="fa-solid fa-music text-brand-400 mr-1"></i>Tono:</span>
                             <button @click="transpose(-1)" class="w-7 h-7 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-lg flex items-center justify-center transition">
@@ -277,6 +284,7 @@
                             </span>
                         </div>
 
+                        <!-- Instrument Arrangement Filter Tabs -->
                         <div class="flex items-center space-x-1 bg-slate-950 p-1 rounded-xl border border-slate-800 overflow-x-auto max-w-full">
                             <button v-for="inst in instruments" :key="inst.id" @click="activeInstrument = inst.id" :class="activeInstrument === inst.id ? 'bg-brand-600 text-white font-semibold shadow' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'" class="px-2.5 py-1 rounded-lg text-xs transition flex items-center space-x-1 whitespace-nowrap">
                                 <i :class="inst.icon"></i>
@@ -297,6 +305,7 @@
                         </div>
                     </div>
 
+                    <!-- Rendered Song Structured Sections -->
                     <div v-for="(section, sIdx) in parsedSongSections" :key="sIdx" class="space-y-3 p-3 sm:p-4 rounded-xl border transition" :class="getSessionContainerStyle(section.type)">
                         
                         <div class="flex items-center justify-between border-b border-slate-800/60 pb-2">
@@ -306,16 +315,17 @@
                             </span>
                         </div>
 
+                        <!-- Lines in Section -->
                         <div class="space-y-4 pt-1">
                             <div v-for="(line, lIdx) in section.lines" :key="lIdx" class="line-block group/line relative">
                                 
-                                <div v-if="line.hasChords" class="flex flex-wrap items-end gap-x-1 gap-y-1 font-mono-chord text-sm leading-snug">
+                                <div v-if="line.hasChords" class="flex flex-wrap items-end gap-x-2 gap-y-1 font-mono-chord text-sm leading-snug">
                                     <div v-for="(item, iIdx) in line.items" :key="iIdx" class="inline-flex flex-col">
                                         <span v-if="item.chord" class="font-bold text-amber-400 bg-amber-400/10 px-1 py-0.5 rounded text-xs leading-none mb-1 border border-amber-400/20 text-center">
                                             {{ transposeChord(item.chord) }}
                                         </span>
                                         <span v-else class="h-4"></span>
-                                        <span class="font-sans text-slate-200 text-base leading-snug whitespace-pre">{{ item.text }}</span>
+                                        <span class="font-sans text-slate-200 text-base leading-snug whitespace-pre">{{ item.text || ' ' }}</span>
                                     </div>
                                 </div>
 
@@ -327,6 +337,7 @@
                     </div>
                 </div>
 
+                <!-- FLOATING TOOLBAR -->
                 <div class="fixed bottom-4 left-1/2 -translate-x-1/2 bg-slate-900/95 border border-slate-700 backdrop-blur-md px-4 py-2.5 rounded-2xl shadow-2xl z-40 flex items-center space-x-4 text-xs">
                     <div class="flex items-center space-x-2 border-r border-slate-800 pr-3">
                         <button @click="toggleAutoScroll" :class="isAutoScrolling ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-300'" class="px-3 py-1.5 rounded-xl font-medium flex items-center space-x-1.5 transition">
@@ -358,53 +369,40 @@
                         <i class="fa-solid fa-cloud-arrow-up text-brand-400"></i>
                         <span>{{ activeSetlist ? 'Editar Canción (Repertorio Temporal)' : (editingSong.id ? 'Editar Canción en la Nube' : 'Nueva Canción a la Nube') }}</span>
                     </h3>
-                    <div class="flex items-center space-x-2">
-                        <!-- Undo / Redo History Buttons -->
-                        <div class="flex items-center bg-slate-950 border border-slate-800 rounded-lg p-0.5">
-                            <button @click="undoHistory" :disabled="historyIndex <= 0" class="px-2.5 py-1 text-slate-300 hover:text-white disabled:opacity-30 text-xs font-semibold flex items-center gap-1 transition" title="Deshacer cambio (Ctrl+Z)">
-                                <i class="fa-solid fa-rotate-left text-brand-400"></i>
-                                <span class="hidden sm:inline">Deshacer</span>
-                            </button>
-                            <span class="text-slate-700">|</span>
-                            <button @click="redoHistory" :disabled="historyIndex >= historyStack.length - 1" class="px-2.5 py-1 text-slate-300 hover:text-white disabled:opacity-30 text-xs font-semibold flex items-center gap-1 transition" title="Rehacer cambio">
-                                <span class="hidden sm:inline">Rehacer</span>
-                                <i class="fa-solid fa-rotate-right text-brand-400"></i>
-                            </button>
-                        </div>
-                        <button @click="showSongModal = false" class="text-slate-400 hover:text-white ml-2"><i class="fa-solid fa-xmark text-lg"></i></button>
-                    </div>
+                    <button @click="showSongModal = false" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
                 </div>
 
                 <div class="p-5 overflow-y-auto space-y-5 text-xs">
+                    <!-- General Song Details -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label class="block text-slate-400 font-medium mb-1">Título de Canción *</label>
-                            <input type="text" v-model="editingSong.title" @input="recordHistory" placeholder="Ej. La Bondad de Dios" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 text-xs focus:outline-none focus:border-brand-500">
+                            <input type="text" v-model="editingSong.title" placeholder="Ej. La Bondad de Dios" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 text-xs focus:outline-none focus:border-brand-500">
                         </div>
                         <div>
                             <label class="block text-slate-400 font-medium mb-1">Artista / Ministerio</label>
-                            <input type="text" v-model="editingSong.artist" @input="recordHistory" placeholder="Ej. Bethel Music / Lead" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 text-xs focus:outline-none focus:border-brand-500">
+                            <input type="text" v-model="editingSong.artist" placeholder="Ej. Bethel Music / Lead" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 text-xs focus:outline-none focus:border-brand-500">
                         </div>
                     </div>
 
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                         <div>
                             <label class="block text-slate-400 font-medium mb-1">Tono Principal (Key)</label>
-                            <select v-model="editingSong.key" @change="recordHistory" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-2 text-amber-400 font-bold text-xs focus:outline-none focus:border-brand-500">
+                            <select v-model="editingSong.key" @change="onKeyChanged" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-2 text-amber-400 font-bold text-xs focus:outline-none focus:border-brand-500">
                                 <option v-for="k in chromaticKeys" :key="k" :value="k">{{ k }}</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-slate-400 font-medium mb-1">BPM (Tiempo)</label>
-                            <input type="number" v-model.number="editingSong.bpm" @input="recordHistory" placeholder="Ej. 120" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 text-xs focus:outline-none focus:border-brand-500">
+                            <input type="number" v-model.number="editingSong.bpm" placeholder="Ej. 120" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 text-xs focus:outline-none focus:border-brand-500">
                         </div>
                         <div>
                             <label class="block text-slate-400 font-medium mb-1">Compás / Ritmo</label>
-                            <input type="text" v-model="editingSong.timeSignature" @input="recordHistory" placeholder="Ej. 4/4 o 6/8" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 text-xs focus:outline-none focus:border-brand-500">
+                            <input type="text" v-model="editingSong.timeSignature" placeholder="Ej. 4/4 o 6/8" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 text-xs focus:outline-none focus:border-brand-500">
                         </div>
                         <div>
                             <label class="block text-slate-400 font-medium mb-1">Tipo de Canción</label>
-                            <select v-model="editingSong.category" @change="recordHistory" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-2 text-slate-100 text-xs focus:outline-none focus:border-brand-500">
+                            <select v-model="editingSong.category" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-2 text-slate-100 text-xs focus:outline-none focus:border-brand-500">
                                 <option v-for="c in categories" :key="c" :value="c">{{ c }}</option>
                             </select>
                         </div>
@@ -413,14 +411,15 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label class="block text-slate-400 font-medium mb-1">Género Estilístico</label>
-                            <input type="text" v-model="editingSong.genre" @input="recordHistory" placeholder="Ej. Pop Worship, Balada, Rock" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 text-xs focus:outline-none focus:border-brand-500">
+                            <input type="text" v-model="editingSong.genre" placeholder="Ej. Pop Worship, Balada, Rock" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 text-xs focus:outline-none focus:border-brand-500">
                         </div>
                         <div>
                             <label class="block text-slate-400 font-medium mb-1">URL de YouTube</label>
-                            <input type="text" v-model="editingSong.youtubeUrl" @input="recordHistory" placeholder="https://www.youtube.com/watch?v=..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 text-xs focus:outline-none focus:border-brand-500">
+                            <input type="text" v-model="editingSong.youtubeUrl" placeholder="https://www.youtube.com/watch?v=..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 text-xs focus:outline-none focus:border-brand-500">
                         </div>
                     </div>
 
+                    <!-- ADVANCED SESSIONS BUILDER SECTION -->
                     <div class="space-y-4 pt-3 border-t border-slate-800">
                         <div class="flex items-center justify-between">
                             <div>
@@ -428,7 +427,7 @@
                                     <i class="fa-solid fa-layer-group text-brand-400"></i>
                                     <span>Estructura de Secciones de la Canción</span>
                                 </h4>
-                                <p class="text-[11px] text-slate-400">Organiza, mueve o edita cada sesión en el orden solicitado.</p>
+                                <p class="text-[11px] text-slate-400">Organiza, mueve, duplica o edita cada sesión independientemente con selector de acordes preciso.</p>
                             </div>
                             <button @click="addNewSection" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-500 text-white rounded-xl font-semibold flex items-center space-x-1 shadow">
                                 <i class="fa-solid fa-plus text-xs"></i>
@@ -436,16 +435,18 @@
                             </button>
                         </div>
 
+                        <!-- List of Structured Sections -->
                         <div class="space-y-4">
                             <div v-for="(sec, idx) in builderSections" :key="idx" class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 space-y-3 relative shadow-md">
                                 <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2.5">
                                     <div class="flex items-center space-x-2">
                                         <span class="w-6 h-6 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 font-bold flex items-center justify-center text-xs">{{ idx + 1 }}</span>
-                                        <select v-model="sec.type" @change="recordHistory" class="bg-slate-900 text-slate-200 border border-slate-700 rounded-lg px-2.5 py-1 text-xs font-semibold focus:outline-none focus:border-brand-500">
+                                        <select v-model="sec.type" class="bg-slate-900 text-slate-200 border border-slate-700 rounded-lg px-2.5 py-1 text-xs font-semibold focus:outline-none focus:border-brand-500">
                                             <option v-for="t in availableSessionTypes" :key="t.name" :value="t.name">{{ t.name }} ({{ t.category }})</option>
                                         </select>
                                     </div>
 
+                                    <!-- Session Action Controls -->
                                     <div class="flex items-center space-x-1">
                                         <button @click="moveSection(idx, -1)" :disabled="idx === 0" class="p-1.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-30 text-slate-300 rounded-lg text-xs" title="Mover arriba">
                                             <i class="fa-solid fa-arrow-up"></i>
@@ -462,27 +463,28 @@
                                     </div>
                                 </div>
 
+                                <!-- Textarea with Precise Cursor-Isolated Chord Autocomplete -->
                                 <div class="relative">
                                     <textarea 
+                                        :id="'section-textarea-' + idx"
                                         v-model="sec.content" 
                                         @input="onSectionInput($event, idx)" 
                                         @keydown="onSectionKeyDown($event, idx)"
+                                        @click="onSectionClick(idx)"
                                         rows="3" 
-                                        placeholder="Escribe la letra y usa corchetes [C] para los acordes..." 
+                                        placeholder="Escribe la letra y usa corchetes [C] para los acordes. Presiona [ para sugerencias."
                                         class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-slate-100 font-mono text-xs focus:outline-none focus:border-brand-500 leading-relaxed"></textarea>
-                                    
-                                    <!-- CHORD AUTOCOMPLETE POPUP LIST -->
-                                    <div v-if="activeAutocompleteIdx === idx && chordSuggestions.length > 0" class="absolute z-30 left-0 mt-1 w-full sm:w-80 bg-slate-900 border border-brand-500/50 rounded-xl shadow-2xl max-h-48 overflow-y-auto p-1.5">
-                                        <div class="text-[10px] text-brand-400 px-2 py-1 font-bold uppercase tracking-wider border-b border-slate-800 mb-1 flex items-center justify-between">
-                                            <span>Sugerencias de Acordes</span>
-                                            <span class="text-[9px] text-slate-500">Usa Tab o Enter</span>
+
+                                    <!-- Chord Autocomplete Popup Menu -->
+                                    <div v-if="activeAutocompleteIdx === idx" class="absolute z-50 bg-slate-900 border border-brand-500/50 rounded-xl shadow-2xl p-2 w-64 max-h-48 overflow-y-auto mt-1 left-2">
+                                        <div class="text-[10px] text-slate-400 px-2 py-1 border-b border-slate-800 flex justify-between items-center font-semibold">
+                                            <span>SELECCIONAR ACORDE</span>
+                                            <span class="text-brand-400">Esc: Cerrar</span>
                                         </div>
-                                        <div v-for="(chordItem, cIdx) in chordSuggestions" :key="cIdx" 
-                                             @mousedown.prevent="selectChordSuggestion(chordItem)"
-                                             :class="{'bg-brand-600 text-white': selectedAutocompleteIndex === cIdx, 'hover:bg-slate-800 text-slate-200': selectedAutocompleteIndex !== cIdx}"
-                                             class="px-2.5 py-1.5 rounded-lg text-xs font-mono font-bold cursor-pointer transition flex items-center justify-between">
-                                            <span>{{ chordItem }}</span>
-                                            <span class="text-[10px] opacity-70 font-sans font-normal">Coincidencia</span>
+                                        <div class="grid grid-cols-4 gap-1 pt-1">
+                                            <button v-for="chord in suggestedChordsList" :key="chord" @click.prevent="insertChordAtCursor(idx, chord)" class="bg-slate-800 hover:bg-brand-600 hover:text-white text-slate-200 text-xs font-mono font-bold py-1.5 rounded-lg border border-slate-700/60 transition text-center">
+                                                {{ chord }}
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -490,7 +492,8 @@
                         </div>
                     </div>
 
-                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-3">
+                    <!-- Instrument Specific Arrangements Accordion -->
+                    <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-3">
                         <h4 class="font-bold text-slate-300 flex items-center gap-1.5">
                             <i class="fa-solid fa-sliders text-brand-400"></i>
                             <span>Arreglos Específicos por Instrumento</span>
@@ -499,23 +502,23 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-slate-400 mb-1">🎹 Piano / Teclados</label>
-                                <textarea v-model="editingSong.arrangements.piano" @input="recordHistory" rows="2" placeholder="Notas de intro..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-200 text-xs"></textarea>
+                                <textarea v-model="editingSong.arrangements.piano" rows="2" placeholder="Notas de intro..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-200 text-xs"></textarea>
                             </div>
                             <div>
                                 <label class="block text-slate-400 mb-1">🎸 Guitarra</label>
-                                <textarea v-model="editingSong.arrangements.guitarra" @input="recordHistory" rows="2" placeholder="Rasgueo, picking..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-200 text-xs"></textarea>
+                                <textarea v-model="editingSong.arrangements.guitarra" rows="2" placeholder="Rasgueo, picking..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-200 text-xs"></textarea>
                             </div>
                             <div>
                                 <label class="block text-slate-400 mb-1">🎸 Bajo</label>
-                                <textarea v-model="editingSong.arrangements.bajo" @input="recordHistory" rows="2" placeholder="Línea de bajo..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-200 text-xs"></textarea>
+                                <textarea v-model="editingSong.arrangements.bajo" rows="2" placeholder="Línea de bajo..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-200 text-xs"></textarea>
                             </div>
                             <div>
                                 <label class="block text-slate-400 mb-1">🎻 Violín / Cuerdas</label>
-                                <textarea v-model="editingSong.arrangements.violin" @input="recordHistory" rows="2" placeholder="Melodía secundaria..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-200 text-xs"></textarea>
+                                <textarea v-model="editingSong.arrangements.violin" rows="2" placeholder="Melodía secundaria..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-200 text-xs"></textarea>
                             </div>
                             <div class="sm:col-span-2">
                                 <label class="block text-slate-400 mb-1">🥁 Batería / Percusión</label>
-                                <textarea v-model="editingSong.arrangements.bateria" @input="recordHistory" rows="2" placeholder="Ritmo de entrada..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-200 text-xs"></textarea>
+                                <textarea v-model="editingSong.arrangements.bateria" rows="2" placeholder="Ritmo de entrada..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-200 text-xs"></textarea>
                             </div>
                         </div>
                     </div>
@@ -539,6 +542,7 @@
                 </div>
 
                 <div class="p-5 space-y-4 text-xs">
+                    <!-- New Setlist Form -->
                     <div class="flex gap-2">
                         <input type="text" v-model="newSetlistName" placeholder="Nombre (Ej. Culto domingo 06/09/2026)" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 text-xs focus:outline-none focus:border-brand-500">
                         <button @click="createSetlist" class="px-3 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-xl font-semibold whitespace-nowrap">
@@ -546,17 +550,18 @@
                         </button>
                     </div>
 
+                    <!-- Existing Setlists -->
                     <div class="space-y-2 max-h-60 overflow-y-auto">
                         <div v-for="setlist in setlists" :key="setlist.id" class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
                             <div>
                                 <h4 class="font-bold text-slate-200">{{ setlist.name }}</h4>
-                                <span class="text-[11px] text-slate-400">{{ setlist.songs ? setlist.songs.length : 0 }} canciones en evento</span>
+                                <span class="text-[11px] text-slate-400">{{ setlist.songs ? setlist.songs.length : (setlist.songIds ? setlist.songIds.length : 0) }} canciones en evento</span>
                             </div>
                             <div class="flex items-center space-x-1.5">
                                 <button @click="selectSetlist(setlist)" class="px-2.5 py-1 bg-brand-600/20 hover:bg-brand-600/40 text-brand-300 border border-brand-500/30 rounded-lg text-xs font-medium">
                                     Abrir Repertorio
                                 </button>
-                                <button @click="deleteSetlist(setlist.id)" class="p-1.5 text-slate-500 hover:text-red-400" title="Eliminar repertorio">
+                                <button @click="deleteSetlist(setlist.id)" class="p-1.5 text-slate-500 hover:text-red-400" title="Eliminar repertorio (no afecta biblioteca)">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
                             </div>
@@ -617,16 +622,16 @@
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'reina-app-id';
         const firebaseConfig = {
-            apiKey: "AIzaSyB3aFWsjqpu1ABXTWF84FXTMv3nmvtf7jM",
-            authDomain: "reinapro-3a02c.firebaseapp.com",
-            projectId: "reinapro-3a02c",
-            storageBucket: "reinapro-3a02c.firebasestorage.app",
-            messagingSenderId: "596609427064",
-            appId: "1:596609427064:web:ca9c4c376bd9dab7d16f8d",
-            measurementId: "G-MVVHKN14NJ"
-        };
+              apiKey: "AIzaSyB3aFWsjqpu1ABXTWF84FXTMv3nmvtf7jM",
+              authDomain: "reinapro-3a02c.firebaseapp.com",
+              projectId: "reinapro-3a02c",
+              storageBucket: "reinapro-3a02c.firebasestorage.app",
+              messagingSenderId: "596609427064",
+              appId: "1:596609427064:web:ca9c4c376bd9dab7d16f8d",
+              measurementId: "G-MVVHKN14NJ"
+            };
 
-        const { createApp, ref, computed, onMounted } = Vue;
+        const { createApp, ref, computed, onMounted, nextTick } = Vue;
 
         createApp({
             setup() {
@@ -637,7 +642,7 @@
                 const searchQuery = ref('');
                 const selectedCategoryFilter = ref('');
                 const toastMessage = ref('');
-                const userId = ref('equipo_reina');
+                const userId = ref('equipo_reina'); // Carpeta central compartida para todo el equipo
 
                 const categories = ['Alabanza', 'Adoración', 'Especial', 'Entrada', 'Meditación', 'Ofrenda'];
                 const chromaticKeys = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
@@ -663,88 +668,11 @@
                 const showSetlistModal = ref(false);
                 const newSetlistName = ref('');
                 const editingSong = ref(createEmptySong());
-
                 const builderSections = ref([]);
-                const availableSessionTypes = [
-                    { name: 'Intro', category: 'Musical' },
-                    { name: 'Estrofa 1', category: 'Verse' },
-                    { name: 'Estrofa 2', category: 'Verse' },
-                    { name: 'Estrofa 3', category: 'Verse' },
-                    { name: 'Coro', category: 'Chorus' },
-                    { name: 'Puente', category: 'Bridge' },
-                    { name: 'Instrumental', category: 'Musical' },
-                    { name: 'Cierre', category: 'Outro' },
-                    { name: 'Pre-coro', category: 'Pre-Chorus / Lift' },
-                    { name: 'Post-coro', category: 'Post-Chorus' },
-                    { name: 'Pre-intro', category: 'Musical' },
-                    { name: 'Interludio', category: 'Interlude' },
-                    { name: 'Solo', category: 'Musical' },
-                    { name: 'Subidón o Quiebre', category: 'Drop' },
-                    { name: 'Hook Instrumental', category: 'Riff' },
-                    { name: 'Chanteo', category: 'Rap Verse' },
-                    { name: 'Transición de Ritmo', category: 'Dembow Loop' },
-                    { name: 'Pauta', category: 'Shout-out' },
-                    { name: 'Recitado', category: 'Spoken Word' }
-                ];
 
-                // Undo / Redo History Stack
-                const historyStack = ref([]);
-                const historyIndex = ref(-1);
-                let isRecordingHistory = true;
-
-                function recordHistory() {
-                    if (!isRecordingHistory) return;
-                    const currentState = JSON.stringify({
-                        song: editingSong.value,
-                        sections: builderSections.value
-                    });
-                    
-                    // If state is identical to current head, do nothing
-                    if (historyIndex.value >= 0 && historyStack.value[historyIndex.value] === currentState) return;
-
-                    // Chop future states if any
-                    historyStack.value = historyStack.value.slice(0, historyIndex.value + 1);
-                    historyStack.value.push(currentState);
-                    historyIndex.value = historyStack.value.length - 1;
-                }
-
-                function undoHistory() {
-                    if (historyIndex.value > 0) {
-                        historyIndex.value--;
-                        applyHistoryState(historyStack.value[historyIndex.value]);
-                        showToast("Deshecho el último cambio");
-                    }
-                }
-
-                function redoHistory() {
-                    if (historyIndex.value < historyStack.value.length - 1) {
-                        historyIndex.value++;
-                        applyHistoryState(historyStack.value[historyIndex.value]);
-                        showToast("Rehecho el cambio");
-                    }
-                }
-
-                function applyHistoryState(stateJson) {
-                    isRecordingHistory = false;
-                    const parsed = JSON.parse(stateJson);
-                    editingSong.value = parsed.song;
-                    builderSections.value = parsed.sections;
-                    setTimeout(() => { isRecordingHistory = true; }, 50);
-                }
-
-                // Chord Autocomplete states
+                // States for chord autocomplete at cursor position
                 const activeAutocompleteIdx = ref(null);
-                const chordSuggestions = ref([]);
-                const selectedAutocompleteIndex = ref(0);
-                const standardChordsDatabase = [
-                    'C', 'Cm', 'C7', 'Cmaj7', 'Csus4', 'C#', 'C#m', 'C#7',
-                    'D', 'Dm', 'D7', 'Dmaj7', 'Dsus4', 'D#', 'Eb', 'Ebm', 'Eb7',
-                    'E', 'Em', 'E7', 'Emaj7', 'Esus4',
-                    'F', 'Fm', 'F7', 'Fmaj7', 'Fsus4', 'F#', 'F#m', 'F#7',
-                    'G', 'Gm', 'G7', 'Gmaj7', 'Gsus4', 'G#', 'Ab', 'Abm', 'Ab7',
-                    'A', 'Am', 'A7', 'Amaj7', 'Asus4', 'A#', 'Bb', 'Bbm', 'Bb7',
-                    'B', 'Bm', 'B7', 'Bmaj7', 'Bsus4', 'G/B', 'C/E', 'D/F#', 'Em/D'
-                ];
+                const suggestedChordsList = ref(['C', 'G', 'Am', 'F', 'Dm', 'Em', 'A', 'D', 'E', 'B7', 'G7', 'C7', 'F#m', 'Bm', 'Bb', 'Eb']);
 
                 const showAddSongModal = ref(false);
                 const addSongSearchQuery = ref('');
@@ -793,16 +721,13 @@
                         db = getFirestore(app);
 
                         auth.onAuthStateChanged((user) => {
-                            userId.value = 'equipo_reina';
-                            if (user && user.email) {
-                                userEmail.value = user.email;
+                            if (user) {
+                                userEmail.value = user.email || null;
+                                setupFirestoreListeners();
+                            } else {
+                                signInAnonymously(auth);
                             }
-                            setupFirestoreListeners();
                         });
-
-                        if (!auth.currentUser) {
-                            await signInAnonymously(auth);
-                        }
                     } catch (e) {
                         console.error("Error connecting to Firebase:", e);
                         showToast("Error de conexión a la nube.");
@@ -811,13 +736,14 @@
                 }
 
                 async function loginWithGoogle() {
+                    if (userEmail.value) {
+                        showToast(`Conectado como: ${userEmail.value}`);
+                        return;
+                    }
                     try {
                         const provider = new GoogleAuthProvider();
                         isLoading.value = true;
-                        const result = await signInWithPopup(auth, provider);
-                        if (result.user && result.user.email) {
-                            userEmail.value = result.user.email;
-                        }
+                        await signInWithPopup(auth, provider);
                         showToast("Sesión iniciada con Google con éxito!");
                     } catch (e) {
                         console.error("Error en Google Auth:", e);
@@ -828,14 +754,16 @@
                 }
 
                 function volverAlHome() {
-                    currentView.value = 'list';
+                    if (currentView) currentView.value = 'list';
                     activeSong.value = null;
                     searchQuery.value = '';
-                    selectedCategoryFilter.value = '';
+                    if (selectedCategoryFilter) selectedCategoryFilter.value = '';
                     showToast(activeSetlist.value ? `Volviendo a repertorio: ${activeSetlist.value.name}` : "Regresando al repertorio principal");
                 }
 
                 function setupFirestoreListeners() {
+                    if (!userId.value) return;
+
                     const songsRef = collection(db, 'artifacts', appId, 'users', userId.value, 'songs');
                     const setlistsRef = collection(db, 'artifacts', appId, 'users', userId.value, 'setlists');
 
@@ -872,127 +800,13 @@
                     initFirebase();
                 });
 
-                function parseContentToBuilderSections(contentStr) {
-                    if (!contentStr) return [{ type: 'Estrofa 1', content: '' }];
-                    const lines = contentStr.split('\n');
-                    const result = [];
-                    let currentSec = { type: 'Estrofa 1', contentLines: [] };
-
-                    lines.forEach(line => {
-                        const trimmed = line.trim();
-                        if (trimmed.startsWith('[') && trimmed.endsWith(']') && !trimmed.includes(' ') && !isChordString(trimmed)) {
-                            if (currentSec.contentLines.length > 0 || result.length === 0) {
-                                if (currentSec.contentLines.length > 0) {
-                                    result.push({ type: currentSec.type, content: currentSec.contentLines.join('\n') });
-                                }
-                                currentSec = { type: trimmed.substring(1, trimmed.length - 1), contentLines: [] };
-                            } else {
-                                currentSec.type = trimmed.substring(1, trimmed.length - 1);
-                            }
-                        } else {
-                            currentSec.contentLines.push(line);
-                        }
-                    });
-                    if (currentSec.contentLines.length > 0) {
-                        result.push({ type: currentSec.type, content: currentSec.contentLines.join('\n') });
-                    }
-                    return result.length > 0 ? result : [{ type: 'Estrofa 1', content: contentStr }];
-                }
-
-                function compileBuilderSectionsToContent() {
-                    return builderSections.value.map(sec => `[${sec.type}]\n${sec.content}`).join('\n\n');
-                }
-
-                function addNewSection() {
-                    builderSections.value.push({ type: 'Coro', content: '' });
-                    recordHistory();
-                }
-
-                function moveSection(idx, direction) {
-                    const newIdx = idx + direction;
-                    if (newIdx < 0 || newIdx >= builderSections.value.length) return;
-                    const item = builderSections.value.splice(idx, 1)[0];
-                    builderSections.value.splice(newIdx, 0, item);
-                    recordHistory();
-                }
-
-                function cloneSection(idx) {
-                    const target = builderSections.value[idx];
-                    builderSections.value.splice(idx + 1, 0, { type: target.type, content: target.content });
-                    recordHistory();
-                }
-
-                function removeSection(idx) {
-                    builderSections.value.splice(idx, 1);
-                    if (builderSections.value.length === 0) {
-                        builderSections.value.push({ type: 'Estrofa 1', content: '' });
-                    }
-                    recordHistory();
-                }
-
-                function onSectionInput(event, idx) {
-                    activeAutocompleteIdx.value = idx;
-                    const text = event.target.value;
-                    const cursorPosition = event.target.selectionStart;
-                    const textBeforeCursor = text.substring(0, cursorPosition);
-                    const lastOpenBracket = textBeforeCursor.lastIndexOf('[');
-
-                    if (lastOpenBracket !== -1) {
-                        const textInsideBrackets = textBeforeCursor.substring(lastOpenBracket + 1);
-                        if (!textInsideBrackets.includes(']')) {
-                            const query = textInsideBrackets.trim().toUpperCase();
-                            chordSuggestions.value = standardChordsDatabase.filter(c => c.toUpperCase().startsWith(query)).slice(0, 6);
-                            selectedAutocompleteIndex.value = 0;
-                            recordHistory();
-                            return;
-                        }
-                    }
-                    activeAutocompleteIdx.value = null;
-                    chordSuggestions.value = [];
-                    recordHistory();
-                }
-
-                function onSectionKeyDown(event, idx) {
-                    if (activeAutocompleteIdx.value === idx && chordSuggestions.value.length > 0) {
-                        if (event.key === 'ArrowDown') {
-                            event.preventDefault();
-                            selectedAutocompleteIndex.value = (selectedAutocompleteIndex.value + 1) % chordSuggestions.value.length;
-                        } else if (event.key === 'ArrowUp') {
-                            event.preventDefault();
-                            selectedAutocompleteIndex.value = (selectedAutocompleteIndex.value - 1 + chordSuggestions.value.length) % chordSuggestions.value.length;
-                        } else if (event.key === 'Enter' || event.key === 'Tab') {
-                            event.preventDefault();
-                            selectChordSuggestion(chordSuggestions.value[selectedAutocompleteIndex.value], idx);
-                        } else if (event.key === 'Escape') {
-                            activeAutocompleteIdx.value = null;
-                        }
-                    }
-                }
-
-                function selectChordSuggestion(chord, idxOverride = null) {
-                    const idx = idxOverride !== null ? idxOverride : activeAutocompleteIdx.value;
-                    if (idx === null || !builderSections.value[idx]) return;
-
-                    const sec = builderSections.value[idx];
-                    const text = sec.content;
-                    const lastOpen = text.lastIndexOf('[');
-                    if (lastOpen !== -1) {
-                        // Replace content cleanly between '[' and cursor without extra unwanted spacing
-                        sec.content = text.substring(0, lastOpen + 1) + chord + ']' + text.substring(text.lastIndexOf(']') !== -1 && text.lastIndexOf(']') > lastOpen ? text.lastIndexOf(']') + 1 : text.length);
-                    }
-                    activeAutocompleteIdx.value = null;
-                    chordSuggestions.value = [];
-                    recordHistory();
-                }
-
-                function onKeyChanged() {
-                    recordHistory();
-                }
-
+                // --- Cloud Database Write Methods ---
                 async function saveSong() {
                     if (!editingSong.value.title) return showToast("El título es obligatorio");
-                    
-                    editingSong.value.content = compileBuilderSectionsToContent();
+                    if (!userId.value) return;
+
+                    // Compilar el contenido de las secciones estructuradas de vuelta al string completo de la canción
+                    editingSong.value.content = builderSections.value.map(sec => `[${sec.type}]\n${sec.content}`).join('\n\n');
 
                     if (activeSetlist.value) {
                         const index = activeSetlist.value.songs.findIndex(s => s.id === editingSong.value.id);
@@ -1008,6 +822,7 @@
                     } else {
                         const id = editingSong.value.id || ('song-' + Date.now());
                         const songData = { ...editingSong.value, id };
+                        
                         const songRef = doc(db, 'artifacts', appId, 'users', userId.value, 'songs', id);
                         await setDoc(songRef, songData);
                         showToast("Canción guardada en la biblioteca principal");
@@ -1017,11 +832,13 @@
                 }
 
                 async function confirmDeleteSong(song) {
+                    if (!userId.value) return;
+                    
                     if (activeSetlist.value) {
                         activeSetlist.value.songs = activeSetlist.value.songs.filter(s => s.id !== song.id);
                         const setlistRef = doc(db, 'artifacts', appId, 'users', userId.value, 'setlists', activeSetlist.value.id);
                         await updateDoc(setlistRef, { songs: activeSetlist.value.songs });
-                        showToast("Canción removida del evento");
+                        showToast("Canción removida del evento (intacta en tu biblioteca)");
                     } else {
                         const songRef = doc(db, 'artifacts', appId, 'users', userId.value, 'songs', song.id);
                         await deleteDoc(songRef);
@@ -1036,6 +853,8 @@
 
                 async function createSetlist() {
                     if (!newSetlistName.value.trim()) return;
+                    if (!userId.value) return;
+
                     const id = 'setlist-' + Date.now();
                     const setlistData = { id, name: newSetlistName.value.trim(), songs: [] };
                     
@@ -1048,12 +867,138 @@
                 }
 
                 async function deleteSetlist(id) {
+                    if (!userId.value) return;
                     const setlistRef = doc(db, 'artifacts', appId, 'users', userId.value, 'setlists', id);
                     await deleteDoc(setlistRef);
+                    
                     if (activeSetlist.value && activeSetlist.value.id === id) {
                         activeSetlist.value = null;
                     }
                     showToast("Repertorio eliminado");
+                }
+
+                // --- UI & Cursor-Isolated Chord Builder Logic ---
+                const availableSessionTypes = [
+                    { name: 'Intro', category: 'Musical' },
+                    { name: 'Estrofa 1', category: 'Verso' },
+                    { name: 'Estrofa 2', category: 'Verso' },
+                    { name: 'Estrofa 3', category: 'Verso' },
+                    { name: 'Pre-Coro', category: 'Transición' },
+                    { name: 'Coro', category: 'Principal' },
+                    { name: 'Coro 2', category: 'Principal' },
+                    { name: 'Puente', category: 'Elevación' },
+                    { name: 'Interludio', category: 'Musical' },
+                    { name: 'Solo', category: 'Musical' },
+                    { name: 'Final', category: 'Cierre' }
+                ];
+
+                function parseSongIntoBuilderSections(contentStr) {
+                    if (!contentStr) return [{ type: 'Estrofa 1', content: '' }];
+                    const lines = contentStr.split('\n');
+                    const sections = [];
+                    let current = { type: 'Estrofa 1', contentLines: [] };
+
+                    lines.forEach(line => {
+                        const trimmed = line.trim();
+                        if (trimmed.startsWith('[') && trimmed.endsWith(']') && !trimmed.includes(' ')) {
+                            if (current.contentLines.length > 0 || sections.length === 0) {
+                                if (current.contentLines.length > 0) {
+                                    sections.push({ type: current.type, content: current.contentLines.join('\n') });
+                                }
+                                current = { type: trimmed.substring(1, trimmed.length - 1), contentLines: [] };
+                            } else {
+                                current.type = trimmed.substring(1, trimmed.length - 1);
+                            }
+                            return;
+                        }
+                        current.contentLines.push(line);
+                    });
+                    if (current.contentLines.length > 0 || sections.length === 0) {
+                        sections.push({ type: current.type, content: current.contentLines.join('\n') });
+                    }
+                    return sections;
+                }
+
+                function addNewSection() {
+                    builderSections.value.push({ type: 'Coro', content: '' });
+                }
+
+                function moveSection(idx, dir) {
+                    const target = idx + dir;
+                    if (target < 0 || target >= builderSections.value.length) return;
+                    const item = builderSections.value.splice(idx, 1)[0];
+                    builderSections.value.splice(target, 0, item);
+                    activeAutocompleteIdx.value = null;
+                }
+
+                function cloneSection(idx) {
+                    const clone = JSON.parse(JSON.stringify(builderSections.value[idx]));
+                    builderSections.value.splice(idx + 1, 0, clone);
+                    showToast("Sección duplicada");
+                }
+
+                function removeSection(idx) {
+                    if (builderSections.value.length <= 1) return showToast("La canción debe tener al menos una sección");
+                    builderSections.value.splice(idx, 1);
+                    activeAutocompleteIdx.value = null;
+                    showToast("Sección eliminada");
+                }
+
+                function onSectionInput(event, idx) {
+                    const val = event.target.value;
+                    const cursorPos = event.target.selectionStart;
+                    // Si el usuario acaba de escribir '[', activamos el menú flotante exclusivamente para este textarea
+                    if (cursorPos > 0 && val[cursorPos - 1] === '[') {
+                        activeAutocompleteIdx.value = idx;
+                    } else {
+                        // Si escribe otra cosa, evaluamos si sigue en un corchete activo o lo cerramos
+                        const lastOpen = val.lastIndexOf('[', cursorPos - 1);
+                        const lastClose = val.lastIndexOf(']', cursorPos - 1);
+                        if (lastOpen === -1 || lastClose > lastOpen) {
+                            if (activeAutocompleteIdx.value === idx) activeAutocompleteIdx.value = null;
+                        }
+                    }
+                }
+
+                function onSectionKeyDown(event, idx) {
+                    if (event.key === 'Escape') {
+                        activeAutocompleteIdx.value = null;
+                    }
+                }
+
+                function onSectionClick(idx) {
+                    // Al hacer click, verificamos si el cursor está justo después de un corchete abierto
+                    const textarea = document.getElementById('section-textarea-' + idx);
+                    if (!textarea) return;
+                    const cursorPos = textarea.selectionStart;
+                    const val = textarea.value;
+                    if (cursorPos > 0 && val[cursorPos - 1] === '[') {
+                        activeAutocompleteIdx.value = idx;
+                    } else {
+                        activeAutocompleteIdx.value = null;
+                    }
+                }
+
+                function insertChordAtCursor(idx, chord) {
+                    const textarea = document.getElementById('section-textarea-' + idx);
+                    if (!textarea) return;
+                    
+                    const start = textarea.selectionStart;
+                    const end = textarea.selectionEnd;
+                    const val = textarea.value;
+
+                    // Inserta exactamente en la posición del cursor de este textarea sin alterar ninguna otra sección ni posición
+                    const chordInsert = chord + ']';
+                    const newVal = val.substring(0, start) + chordInsert + val.substring(end);
+                    
+                    builderSections.value[idx].content = newVal;
+                    activeAutocompleteIdx.value = null;
+
+                    nextTick(() => {
+                        textarea.focus();
+                        const newCursorPos = start + chordInsert.length;
+                        textarea.setSelectionRange(newCursorPos, newCursorPos);
+                    });
                 }
 
                 const addableSongs = computed(() => {
@@ -1064,6 +1009,7 @@
 
                 const filteredSongs = computed(() => {
                     let result = activeSetlist.value ? (activeSetlist.value.songs || []) : songs.value;
+                    
                     if (selectedCategoryFilter.value) {
                         result = result.filter(s => s.category === selectedCategoryFilter.value);
                     }
@@ -1076,17 +1022,13 @@
 
                 function openNewSongModal() {
                     editingSong.value = createEmptySong();
-                    builderSections.value = parseContentToBuilderSections(editingSong.value.content);
-                    historyStack.value = [JSON.stringify({ song: editingSong.value, sections: builderSections.value })];
-                    historyIndex.value = 0;
+                    builderSections.value = [{ type: 'Estrofa 1', content: '' }];
                     showSongModal.value = true;
                 }
 
                 function editSong(song) {
                     editingSong.value = JSON.parse(JSON.stringify(song));
-                    builderSections.value = parseContentToBuilderSections(editingSong.value.content);
-                    historyStack.value = [JSON.stringify({ song: editingSong.value, sections: builderSections.value })];
-                    historyIndex.value = 0;
+                    builderSections.value = parseSongIntoBuilderSections(song.content);
                     showSongModal.value = true;
                 }
 
@@ -1104,14 +1046,23 @@
                 }
 
                 function selectSetlist(setlist) {
+                    if (!setlist.songs && setlist.songIds) {
+                        setlist.songs = songs.value.filter(s => setlist.songIds.includes(s.id)).map(s => JSON.parse(JSON.stringify(s)));
+                        if (userId.value) {
+                            const setlistRef = doc(db, 'artifacts', appId, 'users', userId.value, 'setlists', setlist.id);
+                            updateDoc(setlistRef, { songs: setlist.songs });
+                        }
+                    }
                     if (!setlist.songs) setlist.songs = [];
+
                     activeSetlist.value = setlist;
                     showSetlistModal.value = false;
                     currentView.value = 'list';
                 }
 
                 async function addSongToSetlist(originalSong) {
-                    if (!activeSetlist.value) return;
+                    if (!activeSetlist.value || !userId.value) return;
+                    
                     const songClone = JSON.parse(JSON.stringify(originalSong));
                     songClone.id = songClone.id + '-setlist-' + Date.now();
                     
@@ -1122,7 +1073,7 @@
                     await updateDoc(setlistRef, { songs: activeSetlist.value.songs });
                     
                     showAddSongModal.value = false;
-                    showToast("Agregada al evento con éxito");
+                    showToast("Agregada al evento (Puedes editarla sin afectar la original)");
                 }
 
                 function getInstrumentName(id) {
@@ -1173,16 +1124,17 @@
 
                 const parsedSongSections = computed(() => {
                     if (!activeSong.value || !activeSong.value.content) return [];
+
                     const rawLines = activeSong.value.content.split('\n');
                     const sections = [];
-                    let currentSection = { type: 'Estrofa 1', title: 'Estrofa 1', lines: [] };
+                    let currentSection = { type: 'verso', title: 'Estrofa', lines: [] };
 
                     rawLines.forEach((line) => {
                         const trimmed = line.trim();
                         if (trimmed.startsWith('[') && trimmed.endsWith(']') && !trimmed.includes(' ') && !isChordString(trimmed)) {
                             if (currentSection.lines.length > 0) sections.push(currentSection);
                             const titleStr = trimmed.substring(1, trimmed.length - 1);
-                            currentSection = { type: titleStr, title: titleStr, lines: [] };
+                            currentSection = { type: getSectionTypeFromTitle(titleStr), title: titleStr, lines: [] };
                             return;
                         }
                         if (line.includes('[') && line.includes(']')) {
@@ -1201,28 +1153,39 @@
                     return /^[A-G][b#]?(m|maj|min|dim|aug|sus|[0-9])?(\/[A-G][b#]?)?$/.test(clean);
                 }
 
+                function getSectionTypeFromTitle(title) {
+                    const t = title.toLowerCase();
+                    if (t.includes('coro')) return 'coro';
+                    if (t.includes('intro')) return 'intro';
+                    if (t.includes('puente')) return 'puente';
+                    if (t.includes('pre')) return 'pre-coro';
+                    return 'verso';
+                }
+
                 function getSessionContainerStyle(type) {
                     const t = type.toLowerCase();
                     if (t.includes('coro')) return 'bg-brand-900/10 border-brand-500/20';
-                    if (t.includes('intro') || t.includes('pre-intro')) return 'bg-slate-800/30 border-slate-700/50';
+                    if (t.includes('intro') || t.includes('solo') || t.includes('interludio')) return 'bg-slate-800/30 border-slate-700/50';
                     if (t.includes('puente')) return 'bg-purple-900/10 border-purple-500/20';
-                    return 'bg-slate-900/50 border-transparent';
+                    if (t.includes('pre')) return 'bg-blue-900/10 border-blue-500/20';
+                    return 'bg-slate-900/50 border-slate-800/80';
                 }
 
                 function getSessionHeaderBadgeStyle(type) {
                     const t = type.toLowerCase();
                     if (t.includes('coro')) return 'bg-brand-500/20 text-brand-300 border-brand-500/30';
-                    if (t.includes('intro')) return 'bg-slate-700 text-slate-300 border-slate-600';
+                    if (t.includes('intro') || t.includes('solo') || t.includes('interludio')) return 'bg-slate-800 text-slate-300 border-slate-700';
                     if (t.includes('puente')) return 'bg-purple-500/20 text-purple-300 border-purple-500/30';
+                    if (t.includes('pre')) return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
                     return 'bg-slate-800 text-slate-400 border-slate-700';
                 }
 
                 function getSessionIcon(type) {
                     const t = type.toLowerCase();
                     if (t.includes('coro')) return 'fa-solid fa-users';
-                    if (t.includes('intro')) return 'fa-solid fa-play';
+                    if (t.includes('intro') || t.includes('solo') || t.includes('interludio')) return 'fa-solid fa-play';
                     if (t.includes('puente')) return 'fa-solid fa-bridge-water';
-                    if (t.includes('rap') || t.includes('chanteo')) return 'fa-solid fa-microphone';
+                    if (t.includes('pre')) return 'fa-solid fa-arrow-up-right-dots';
                     return 'fa-solid fa-align-left';
                 }
 
@@ -1294,18 +1257,24 @@
                 }
 
                 return {
-                    isLoading, connectionStatus, currentView, searchQuery, selectedCategoryFilter, categories,
-                    songs, filteredSongs, activeSong, setlists, activeSetlist, showSetlistModal, newSetlistName,
-                    showSongModal, editingSong, chromaticKeys, showAddSongModal, addSongSearchQuery, addableSongs,
-                    instruments, activeInstrument, semitoneOffset, toastMessage, currentKey, capoSuggestion,
-                    parsedSongSections, isAutoScrolling, scrollSpeed, isMetronomeActive,
-                    builderSections, availableSessionTypes, activeAutocompleteIdx, chordSuggestions, selectedAutocompleteIndex,
-                    openNewSongModal, editSong, saveSong, confirmDeleteSong, openSong, openSetlistModal,
-                    createSetlist, deleteSetlist, selectSetlist, addSongToSetlist, transpose, transposeChord,
-                    getInstrumentName, getSessionContainerStyle, getSessionHeaderBadgeStyle, getSessionIcon,
+                    isLoading, connectionStatus,
+                    currentView, searchQuery, selectedCategoryFilter, categories,
+                    songs, filteredSongs, activeSong,
+                    setlists, activeSetlist, showSetlistModal, newSetlistName,
+                    showSongModal, editingSong, chromaticKeys,
+                    builderSections, availableSessionTypes,
+                    activeAutocompleteIdx, suggestedChordsList,
+                    onSectionInput, onSectionKeyDown, onSectionClick, insertChordAtCursor,
+                    showAddSongModal, addSongSearchQuery, addableSongs, addSongToSetlist,
+                    instruments, activeInstrument, semitoneOffset,
+                    toastMessage, currentKey, capoSuggestion, parsedSongSections,
+                    isAutoScrolling, scrollSpeed, isMetronomeActive,
+                    openNewSongModal, editSong, saveSong, confirmDeleteSong, openSong,
+                    openSetlistModal, createSetlist, deleteSetlist, selectSetlist,
+                    transpose, transposeChord, getInstrumentName,
+                    getSessionContainerStyle, getSessionHeaderBadgeStyle, getSessionIcon,
                     toggleAutoScroll, toggleMetronome, userEmail, loginWithGoogle, volverAlHome,
-                    addNewSection, moveSection, cloneSection, removeSection, onSectionInput, onSectionKeyDown,
-                    selectChordSuggestion, onKeyChanged, recordHistory, undoHistory, redoHistory, historyIndex, historyStack
+                    addNewSection, moveSection, cloneSection, removeSection
                 };
             }
         }).mount('#app');
