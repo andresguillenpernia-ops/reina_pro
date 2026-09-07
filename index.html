@@ -100,7 +100,6 @@
                 <h1 class="text-xl font-bold text-slate-100 tracking-tight flex items-center gap-1.5 transition select-none pl-1">
                     <span class="font-black text-white tracking-tight">Reina</span>
                     <span class="bg-[#3b30e3] text-white text-[9px] font-black uppercase px-1.5 py-0.5 rounded border border-[#4c41f5]/60 tracking-wider leading-none shadow-sm shadow-[#3b30e3]/30">PRO</span>
-                    <!-- Etiqueta de versión agregada -->
                     <span class="text-[10px] text-slate-500 font-medium tracking-wide self-end mb-0.5">v15.1.1</span>
                 </h1>
             </div>
@@ -297,11 +296,11 @@
                         </div>
                     </div>
 
-                    <div v-for="(section, sIdx) in parsedSongSections" :key="sIdx" class="space-y-3 p-3 sm:p-4 rounded-xl border transition" :class="getSessionContainerStyle(section.type)">
+                    <div v-for="(section, sIdx) in parsedSongSections" :key="sIdx" class="space-y-3 p-3.5 sm:p-4 rounded-xl border transition shadow-sm" :class="getSessionContainerStyle(section.type)">
                         
-                        <div class="flex items-center justify-between border-b border-slate-800/60 pb-2">
-                            <span class="text-xs font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-lg flex items-center space-x-1.5 border" :class="getSessionHeaderBadgeStyle(section.type)">
-                                <i :class="getSessionIcon(section.type)"></i>
+                        <div class="flex items-center justify-between border-b pb-2" :class="getSessionDividerStyle(section.type)">
+                            <span class="text-xs font-extrabold uppercase tracking-wider px-3 py-1.5 rounded-lg flex items-center space-x-2 border shadow-sm" :class="getSessionHeaderBadgeStyle(section.type)">
+                                <i :class="getSessionIcon(section.type)" class="text-sm"></i>
                                 <span>{{ section.title }}</span>
                             </span>
                         </div>
@@ -311,7 +310,7 @@
                                 
                                 <div v-if="line.hasChords" class="flex flex-wrap items-end gap-x-1 gap-y-1 font-mono-chord text-sm leading-snug">
                                     <div v-for="(item, iIdx) in line.items" :key="iIdx" class="inline-flex flex-col">
-                                        <span v-if="item.chord" class="font-bold text-amber-400 bg-amber-400/10 px-1 py-0.5 rounded text-xs leading-none mb-1 border border-amber-400/20 text-center">
+                                        <span v-if="item.chord" class="font-bold text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded text-xs leading-none mb-1 border border-amber-400/20 text-center shadow-xs">
                                             {{ transposeChord(item.chord) }}
                                         </span>
                                         <span v-else class="h-4"></span>
@@ -428,7 +427,7 @@
                                     <div class="flex items-center space-x-2">
                                         <span class="w-6 h-6 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 font-bold flex items-center justify-center text-xs">{{ idx + 1 }}</span>
                                         <select v-model="sec.type" class="bg-slate-900 text-slate-200 border border-slate-700 rounded-lg px-2.5 py-1 text-xs font-semibold focus:outline-none focus:border-brand-500">
-                                            <option v-for="t in availableSessionTypes" :key="t.name" :value="t.name">{{ t.name }} ({{ t.category }})</option>
+                                            <option v-for="t in availableSessionTypes" :key="t" :value="t">{{ t }}</option>
                                         </select>
                                     </div>
 
@@ -627,6 +626,21 @@
                 const categories = ['Alabanza', 'Adoración', 'Especial', 'Entrada', 'Meditación', 'Ofrenda'];
                 const chromaticKeys = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
                 
+                // EXACT requested session types in exact specified order
+                const availableSessionTypes = [
+                    'INTRO', 
+                    'ESTROFA', 
+                    'CORO', 
+                    'PUENTE', 
+                    'INSTRUMENTAL', 
+                    'CIERRE', 
+                    'PRE-CORO', 
+                    'POST-CORO', 
+                    'PRE-INTRO', 
+                    'INTERLUDIO', 
+                    'SOLO'
+                ];
+                
                 const instruments = [
                     { id: 'all', name: 'Todos', icon: 'fa-solid fa-layer-group' },
                     { id: 'piano', name: 'Piano', icon: 'fa-solid fa-keyboard' },
@@ -677,7 +691,7 @@
                         key: 'C', bpm: 72, timeSignature: '4/4', category: 'Adoración', genre: 'Pop Worship',
                         youtubeUrl: 'https://www.youtube.com/watch?v=0B6_V2M1Axg',
                         arrangements: { piano: 'Intro suave...', guitarra: 'Capo 5 en posición de G.', bajo: 'Tónica clara.', violin: '', bateria: 'Rimshot en el verso 1.' },
-                        content: "[Intro]\n[C]  [F]  [C]  [G]\n\n[Estrofa 1]\n[C]Te amo Dios, Tu mi[F]sericordia no me fa[C]lla\n[G/B]Cada ma[Am]ñana me des[F]piertas con Tu a[G]mor\n\n[Coro]\nY can[F]taré de la bon[C]dad de Dios"
+                        content: "[INTRO]\n[C]  [F]  [C]  [G]\n\n[ESTROFA]\n[C]Te amo Dios, Tu mi[F]sericordia no me fa[C]lla\n[G/B]Cada ma[Am]ñana me des[F]piertas con Tu a[G]mor\n\n[CORO]\nY can[F]taré de la bon[C]dad de Dios\n\n[PUENTE]\nEste es el puente musical de adoración"
                     }
                 ];
 
@@ -924,25 +938,11 @@
                     showToast("Repertorio eliminado");
                 }
 
-                const availableSessionTypes = [
-                    { name: 'Intro', category: 'Musical' },
-                    { name: 'Estrofa 1', category: 'Verso' },
-                    { name: 'Estrofa 2', category: 'Verso' },
-                    { name: 'Estrofa 3', category: 'Verso' },
-                    { name: 'Pre-Coro', category: 'Transición' },
-                    { name: 'Coro', category: 'Principal' },
-                    { name: 'Coro 2', category: 'Principal' },
-                    { name: 'Puente', category: 'Elevación' },
-                    { name: 'Interludio', category: 'Musical' },
-                    { name: 'Solo', category: 'Musical' },
-                    { name: 'Final', category: 'Cierre' }
-                ];
-
                 function parseSongIntoBuilderSections(contentStr) {
-                    if (!contentStr) return [{ type: 'Estrofa 1', content: '' }];
+                    if (!contentStr) return [{ type: 'ESTROFA', content: '' }];
                     const lines = contentStr.split('\n');
                     const sections = [];
-                    let current = { type: 'Estrofa 1', contentLines: [] };
+                    let current = { type: 'ESTROFA', contentLines: [] };
 
                     lines.forEach(line => {
                         const trimmed = line.trim();
@@ -951,9 +951,9 @@
                                 if (current.contentLines.length > 0) {
                                     sections.push({ type: current.type, content: current.contentLines.join('\n') });
                                 }
-                                current = { type: trimmed.substring(1, trimmed.length - 1), contentLines: [] };
+                                current = { type: trimmed.substring(1, trimmed.length - 1).toUpperCase(), contentLines: [] };
                             } else {
-                                current.type = trimmed.substring(1, trimmed.length - 1);
+                                current.type = trimmed.substring(1, trimmed.length - 1).toUpperCase();
                             }
                             return;
                         }
@@ -966,7 +966,7 @@
                 }
 
                 function addNewSection() {
-                    builderSections.value.push({ type: 'Coro', content: '' });
+                    builderSections.value.push({ type: 'CORO', content: '' });
                 }
 
                 function moveSection(idx, dir) {
@@ -1069,7 +1069,7 @@
                 function openNewSongModal() {
                     editingSong.value = createEmptySong();
                     originalSongKeyForTransposition.value = 'C';
-                    builderSections.value = [{ type: 'Estrofa 1', content: '' }];
+                    builderSections.value = [{ type: 'ESTROFA', content: '' }];
                     showSongModal.value = true;
                 }
 
@@ -1175,14 +1175,14 @@
 
                     const rawLines = activeSong.value.content.split('\n');
                     const sections = [];
-                    let currentSection = { type: 'verso', title: 'Estrofa', lines: [] };
+                    let currentSection = { type: 'ESTROFA', title: 'ESTROFA', lines: [] };
 
                     rawLines.forEach((line) => {
                         const trimmed = line.trim();
                         if (trimmed.startsWith('[') && trimmed.endsWith(']') && !trimmed.includes(' ') && !isChordString(trimmed)) {
                             if (currentSection.lines.length > 0) sections.push(currentSection);
-                            const titleStr = trimmed.substring(1, trimmed.length - 1);
-                            currentSection = { type: getSectionTypeFromTitle(titleStr), title: titleStr, lines: [] };
+                            const titleStr = trimmed.substring(1, trimmed.length - 1).toUpperCase();
+                            currentSection = { type: titleStr, title: titleStr, lines: [] };
                             return;
                         }
                         if (line.includes('[') && line.includes(']')) {
@@ -1201,44 +1201,60 @@
                     return /^[A-G][b#]?(m|maj|min|dim|aug|sus|[0-9])?(\/[A-G][b#]?)?$/.test(clean);
                 }
 
-                function getSectionTypeFromTitle(title) {
-                    const t = title.toLowerCase();
-                    if (t.includes('coro')) return 'coro';
-                    if (t.includes('intro')) return 'intro';
-                    if (t.includes('puente')) return 'puente';
-                    if (t.includes('pre')) return 'pre-coro';
-                    return 'verso';
-                }
-
+                // Dedicated differentiating styling for each session type
                 function getSessionContainerStyle(type) {
-                    const t = type.toLowerCase();
-                    if (t.includes('coro')) return 'bg-brand-900/10 border-brand-500/20';
-                    if (t.includes('intro') || t.includes('solo') || t.includes('interludio')) return 'bg-slate-800/30 border-slate-700/50';
-                    if (t.includes('puente')) return 'bg-purple-900/10 border-purple-500/20';
-                    if (t.includes('pre')) return 'bg-blue-900/10 border-blue-500/20';
+                    const t = (type || '').toUpperCase().trim();
+                    if (t === 'CORO') return 'bg-amber-950/20 border-amber-500/30 shadow-amber-950/10';
+                    if (t === 'INTRO') return 'bg-blue-950/20 border-blue-500/30 shadow-blue-950/10';
+                    if (t === 'PUENTE') return 'bg-purple-950/20 border-purple-500/30 shadow-purple-950/10';
+                    if (t === 'ESTROFA') return 'bg-slate-900/60 border-slate-700/60 shadow-slate-900/20';
+                    if (t === 'INSTRUMENTAL' || t === 'INTERLUDIO' || t === 'SOLO') return 'bg-emerald-950/20 border-emerald-500/30 shadow-emerald-950/10';
+                    if (t === 'CIERRE') return 'bg-rose-950/20 border-rose-500/30 shadow-rose-950/10';
+                    if (t === 'PRE-CORO' || t === 'POST-CORO' || t === 'PRE-INTRO') return 'bg-cyan-950/20 border-cyan-500/30 shadow-cyan-950/10';
                     return 'bg-slate-900/50 border-slate-800/80';
                 }
 
+                function getSessionDividerStyle(type) {
+                    const t = (type || '').toUpperCase().trim();
+                    if (t === 'CORO') return 'border-amber-500/20';
+                    if (t === 'INTRO') return 'border-blue-500/20';
+                    if (t === 'PUENTE') return 'border-purple-500/20';
+                    if (t === 'ESTROFA') return 'border-slate-700/40';
+                    if (t === 'INSTRUMENTAL' || t === 'INTERLUDIO' || t === 'SOLO') return 'border-emerald-500/20';
+                    if (t === 'CIERRE') return 'border-rose-500/20';
+                    if (t === 'PRE-CORO' || t === 'POST-CORO' || t === 'PRE-INTRO') return 'border-cyan-500/20';
+                    return 'border-slate-800/60';
+                }
+
                 function getSessionHeaderBadgeStyle(type) {
-                    const t = type.toLowerCase();
-                    if (t.includes('coro')) return 'bg-brand-500/20 text-brand-300 border-brand-500/30';
-                    if (t.includes('intro') || t.includes('solo') || t.includes('interludio')) return 'bg-slate-800 text-slate-300 border-slate-700';
-                    if (t.includes('puente')) return 'bg-purple-500/20 text-purple-300 border-purple-500/30';
-                    if (t.includes('pre')) return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
-                    return 'bg-slate-800 text-slate-400 border-slate-700';
+                    const t = (type || '').toUpperCase().trim();
+                    if (t === 'CORO') return 'bg-amber-500/20 text-amber-300 border-amber-500/30';
+                    if (t === 'INTRO') return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
+                    if (t === 'PUENTE') return 'bg-purple-500/20 text-purple-300 border-purple-500/30';
+                    if (t === 'ESTROFA') return 'bg-slate-800 text-slate-200 border-slate-700';
+                    if (t === 'INSTRUMENTAL' || t === 'INTERLUDIO' || t === 'SOLO') return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
+                    if (t === 'CIERRE') return 'bg-rose-500/20 text-rose-300 border-rose-500/30';
+                    if (t === 'PRE-CORO' || t === 'POST-CORO' || t === 'PRE-INTRO') return 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30';
+                    return 'bg-slate-800 text-slate-300 border-slate-700';
                 }
 
+                // Dedicated matching icons for each specific session type
                 function getSessionIcon(type) {
-                    const t = type.toLowerCase();
-                    if (t.includes('coro')) return 'fa-solid fa-users';
-                    if (t.includes('intro') || t.includes('solo') || t.includes('interludio')) return 'fa-solid fa-play';
-                    if (t.includes('puente')) return 'fa-solid fa-bridge-water';
-                    if (t.includes('pre')) return 'fa-solid fa-arrow-up-right-dots';
-                    return 'fa-solid fa-align-left';
+                    const t = (type || '').toUpperCase().trim();
+                    if (t === 'INTRO') return 'fa-solid fa-play';
+                    if (t === 'ESTROFA') return 'fa-solid fa-align-left';
+                    if (t === 'CORO') return 'fa-solid fa-users';
+                    if (t === 'PUENTE') return 'fa-solid fa-bridge-water';
+                    if (t === 'INSTRUMENTAL') return 'fa-solid fa-guitar';
+                    if (t === 'CIERRE') return 'fa-solid fa-flag-checkered';
+                    if (t === 'PRE-CORO') return 'fa-solid fa-arrow-up-right-dots';
+                    if (t === 'POST-CORO') return 'fa-solid fa-arrow-down-right-dots';
+                    if (t === 'PRE-INTRO') return 'fa-solid fa-hourglass-start';
+                    if (t === 'INTERLUDIO') return 'fa-solid fa-headphones';
+                    if (t === 'SOLO') return 'fa-solid fa-bolt';
+                    return 'fa-solid fa-music';
                 }
 
-                // FIXED: Robust parser for lines with chords. When text segments are empty (like in Intros), 
-                // it avoids forcing empty inline text blocks that caused line breaks.
                 function parseLineWithChords(line) {
                     const items = [];
                     const regex = /\[(.*?)\]/g;
@@ -1333,7 +1349,7 @@
                     openNewSongModal, editSong, saveSong, confirmDeleteSong, openSong,
                     openSetlistModal, createSetlist, deleteSetlist, selectSetlist,
                     transpose, transposeChord, getInstrumentName, onKeyChanged,
-                    getSessionContainerStyle, getSessionHeaderBadgeStyle, getSessionIcon,
+                    getSessionContainerStyle, getSessionDividerStyle, getSessionHeaderBadgeStyle, getSessionIcon,
                     toggleAutoScroll, toggleMetronome, userEmail, loginWithGoogle, volverAlHome,
                     addNewSection, moveSection, cloneSection, removeSection
                 };
