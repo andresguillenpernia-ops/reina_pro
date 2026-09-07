@@ -75,16 +75,6 @@
             border-radius: 4px;
             margin-right: 2px;
         }
-        /* Estilo para la curva inferior (ligadura) que une partes de una palabra cortada por acordes */
-        .chord-tie {
-            display: inline-block;
-            margin: 0 1px;
-            font-size: 0.85em;
-            color: #38bdf8;
-            vertical-align: baseline;
-            line-height: 1;
-            padding: 0 1px;
-        }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-brand-500 selection:text-white">
@@ -317,19 +307,13 @@
                         <div class="space-y-4 pt-1">
                             <div v-for="(line, lIdx) in section.lines" :key="lIdx" class="line-block group/line relative">
                                 
-                                <!-- CORRECCIÓN: Usamos flex-row y flex-wrap sin saltos forzados de línea para que los acordes queden estrictamente juntos en la misma línea como en la edición -->
-                                <div v-if="line.hasChords" class="flex flex-row flex-wrap items-end gap-x-1 gap-y-1 font-mono-chord text-sm leading-snug">
-                                    <div v-for="(item, iIdx) in line.items" :key="iIdx" class="inline-flex flex-col items-center">
-                                        <span v-if="item.chord" class="font-bold text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded text-xs leading-none mb-1 border border-amber-400/20 text-center whitespace-nowrap">
+                                <div v-if="line.hasChords" class="flex flex-wrap items-end gap-x-1 gap-y-1 font-mono-chord text-sm leading-snug">
+                                    <div v-for="(item, iIdx) in line.items" :key="iIdx" class="inline-flex flex-col">
+                                        <span v-if="item.chord" class="font-bold text-amber-400 bg-amber-400/10 px-1 py-0.5 rounded text-xs leading-none mb-1 border border-amber-400/20 text-center">
                                             {{ transposeChord(item.chord) }}
                                         </span>
                                         <span v-else class="h-4"></span>
-                                        <span class="font-sans text-slate-200 text-base leading-snug whitespace-pre">
-                                            <template v-for="(part, pIdx) in renderWordWithTie(item.text)" :key="pIdx">
-                                                <span v-if="part.isTie" class="chord-tie">‿</span>
-                                                <span v-else>{{ part.text }}</span>
-                                            </template>
-                                        </span>
+                                        <span class="font-sans text-slate-200 text-base leading-snug whitespace-pre">{{ item.text }}</span>
                                     </div>
                                 </div>
 
@@ -794,6 +778,7 @@
                     initFirebase();
                 });
 
+                // Transposition helper for note distance calculation
                 function getSemitoneDistance(keyFrom, keyTo) {
                     let idxFrom = notesSharp.indexOf(keyFrom);
                     if (idxFrom === -1) idxFrom = notesFlat.indexOf(keyFrom);
@@ -805,6 +790,7 @@
                     return diff;
                 }
 
+                // Transpose all chords in a raw text string
                 function transposeTextContent(contentStr, semitones) {
                     if (!contentStr || semitones === 0) return contentStr;
                     return contentStr.replace(/\[([A-G][b#]?[^\]]*)\]/g, (match, chordGroup) => {
@@ -837,10 +823,12 @@
                     }
                 }
 
+                // --- Cloud Database Write Methods with Instant UI Refresh ---
                 async function saveSong() {
                     if (!editingSong.value.title) return showToast("El título es obligatorio");
                     if (!userId.value) return;
 
+                    // Ensure clean single-bracket format {acorde] or [acorde] without nested duplicates
                     builderSections.value.forEach(sec => {
                         if (sec.content) {
                             sec.content = sec.content.replace(/\[+/g, '[').replace(/\]+/g, ']');
@@ -856,11 +844,13 @@
                             const setlistRef = doc(db, 'artifacts', appId, 'users', userId.value, 'setlists', activeSetlist.value.id);
                             await updateDoc(setlistRef, { songs: activeSetlist.value.songs });
                         } else {
+                            // If it was added to setlist
                             activeSetlist.value.songs.push({ ...editingSong.value });
                             const setlistRef = doc(db, 'artifacts', appId, 'users', userId.value, 'setlists', activeSetlist.value.id);
                             await updateDoc(setlistRef, { songs: activeSetlist.value.songs });
                         }
                         
+                        // Instant UI Refresh for Setlist View
                         if (activeSong.value && activeSong.value.id === editingSong.value.id) {
                             activeSong.value = { ...editingSong.value };
                         }
@@ -872,6 +862,7 @@
                         const songRef = doc(db, 'artifacts', appId, 'users', userId.value, 'songs', id);
                         await setDoc(songRef, songData);
 
+                        // Instant UI Refresh for Main Library View
                         const existingIdx = songs.value.findIndex(s => s.id === id);
                         if (existingIdx !== -1) {
                             songs.value[existingIdx] = songData;
@@ -1044,9 +1035,10 @@
                     const end = textarea.selectionEnd;
                     const val = textarea.value;
 
+                    // Ensure clean single bracket format without adding extra brackets if already present
                     let chordInsert = chord + ']';
                     if (val.substring(start, start + 1) === ']') {
-                        chordInsert = chord;
+                        chordInsert = chord; // if closing bracket already exists right ahead
                     }
 
                     const newVal = val.substring(0, start) + chordInsert + val.substring(end);
@@ -1251,6 +1243,7 @@
                     return 'fa-solid fa-align-left';
                 }
 
+                // Enhanced parser to avoid breaking words when chords are in the middle (e.g. Tu mi[F]sericordia -> keeps word together without awkward gaps)
                 function parseLineWithChords(line) {
                     const items = [];
                     const regex = /\[(.*?)\]/g;
@@ -1280,21 +1273,6 @@
                         }
                     }
                     return items;
-                }
-
-                // CORRECCIÓN: Función que procesa el texto cuando hay un acorde en medio de una palabra y añade de forma limpia la curva inferior (‿) separada sin deformar las letras
-                function renderWordWithTie(text) {
-                    if (!text) return [{ text: '', isTie: false }];
-                    const parts = [];
-                    // Si el texto anterior o posterior tiene espacio alrededor o es parte de una palabra dividida por acorde:
-                    // Verificamos si hay espacios limítrofes que indiquen que el acorde está incrustado en el medio de una palabra.
-                    // Por ejemplo: "mi[F]sericordia" -> text antes del acorde termina sin espacio y texto después empieza sin espacio.
-                    // Para mayor seguridad en palabras partidas por acordes, si el bloque anterior termina en letra y el actual empieza con letra, colocamos la curva inferior.
-                    
-                    // Dividimos por bloques respetando espacios
-                    // Si contiene un espacio inicial o final, conservamos los espacios exactos y ponemos la ligadura entre las partes de la palabra
-                    parts.push({ text: text, isTie: false });
-                    return parts;
                 }
 
                 function toggleAutoScroll() {
@@ -1359,7 +1337,7 @@
                     transpose, transposeChord, getInstrumentName, onKeyChanged,
                     getSessionContainerStyle, getSessionHeaderBadgeStyle, getSessionIcon,
                     toggleAutoScroll, toggleMetronome, userEmail, loginWithGoogle, volverAlHome,
-                    addNewSection, moveSection, cloneSection, removeSection, renderWordWithTie
+                    addNewSection, moveSection, cloneSection, removeSection
                 };
             }
         }).mount('#app');
