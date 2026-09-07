@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+
 <html lang="es" class="dark">
 <head>
     <meta charset="UTF-8">
@@ -125,10 +125,8 @@
 
         <main class="flex-1 p-3 sm:p-5 flex flex-col">
 
-            <!-- SONG LIST VIEW -->
             <div v-if="currentView === 'list'" class="space-y-4">
                 
-                <!-- Search & Filters Bar -->
                 <div class="bg-slate-900 p-3 sm:p-4 rounded-2xl border border-slate-800 shadow-md space-y-3">
                     <div class="relative">
                         <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-500"></i>
@@ -209,7 +207,6 @@
                     </div>
                 </div>
 
-                <!-- Empty State -->
                 <div v-else class="text-center py-12 bg-slate-900/50 rounded-2xl border border-dashed border-slate-800 p-6">
                     <i class="fa-solid fa-music text-4xl text-slate-700 mb-3 block"></i>
                     <h3 class="text-base font-semibold text-slate-300">No hay canciones en esta vista</h3>
@@ -223,10 +220,8 @@
                 </div>
             </div>
 
-            <!-- SONG PERFORMANCE VIEW -->
             <div v-if="currentView === 'song' && activeSong" class="space-y-4 flex-1 flex flex-col">
                 
-                <!-- Song Metadata Banner -->
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg space-y-3">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div>
@@ -245,7 +240,6 @@
                             <p class="text-xs sm:text-sm text-slate-400 font-medium"><i class="fa-solid fa-microphone-lines text-slate-500 mr-1"></i>{{ activeSong.artist }}</p>
                         </div>
 
-                        <!-- Action Buttons -->
                         <div class="flex items-center space-x-1.5 self-end sm:self-center">
                             <a v-if="activeSong.youtubeUrl" :href="activeSong.youtubeUrl" target="_blank" class="px-2.5 py-1.5 bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/30 rounded-lg text-xs font-medium flex items-center space-x-1 transition">
                                 <i class="fa-brands fa-youtube text-red-500"></i>
@@ -261,10 +255,8 @@
                         </div>
                     </div>
 
-                    <!-- TRANSPOSITION & INSTRUMENT CONTROLS BAR -->
                     <div class="pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
                         
-                        <!-- Transposer Controls -->
                         <div class="flex items-center space-x-2 bg-slate-950 p-1.5 rounded-xl border border-slate-800">
                             <span class="text-slate-400 font-semibold px-1"><i class="fa-solid fa-music text-brand-400 mr-1"></i>Tono:</span>
                             <button @click="transpose(-1)" class="w-7 h-7 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-lg flex items-center justify-center transition">
@@ -284,7 +276,6 @@
                             </span>
                         </div>
 
-                        <!-- Instrument Arrangement Filter Tabs -->
                         <div class="flex items-center space-x-1 bg-slate-950 p-1 rounded-xl border border-slate-800 overflow-x-auto max-w-full">
                             <button v-for="inst in instruments" :key="inst.id" @click="activeInstrument = inst.id" :class="activeInstrument === inst.id ? 'bg-brand-600 text-white font-semibold shadow' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'" class="px-2.5 py-1 rounded-lg text-xs transition flex items-center space-x-1 whitespace-nowrap">
                                 <i :class="inst.icon"></i>
@@ -294,7 +285,6 @@
                     </div>
                 </div>
 
-                <!-- SONG CONTENT / PARSED LYRICS & CHORDS -->
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl flex-1 space-y-6 text-slate-100 font-sans relative overflow-hidden" id="songContainer">
                     
                     <div v-if="activeInstrument !== 'all' && activeSong.arrangements && activeSong.arrangements[activeInstrument]" class="bg-indigo-950/60 border border-indigo-500/30 p-3 rounded-xl flex items-start space-x-2 text-xs text-indigo-200">
@@ -305,7 +295,6 @@
                         </div>
                     </div>
 
-                    <!-- Rendered Song Structured Sections -->
                     <div v-for="(section, sIdx) in parsedSongSections" :key="sIdx" class="space-y-3 p-3 sm:p-4 rounded-xl border transition" :class="getSessionContainerStyle(section.type)">
                         
                         <div class="flex items-center justify-between border-b border-slate-800/60 pb-2">
@@ -315,17 +304,16 @@
                             </span>
                         </div>
 
-                        <!-- Lines in Section -->
                         <div class="space-y-4 pt-1">
                             <div v-for="(line, lIdx) in section.lines" :key="lIdx" class="line-block group/line relative">
                                 
-                                <div v-if="line.hasChords" class="flex flex-wrap items-end gap-x-2 gap-y-1 font-mono-chord text-sm leading-snug">
+                                <div v-if="line.hasChords" class="flex flex-wrap items-end gap-x-1 gap-y-1 font-mono-chord text-sm leading-snug">
                                     <div v-for="(item, iIdx) in line.items" :key="iIdx" class="inline-flex flex-col">
                                         <span v-if="item.chord" class="font-bold text-amber-400 bg-amber-400/10 px-1 py-0.5 rounded text-xs leading-none mb-1 border border-amber-400/20 text-center">
                                             {{ transposeChord(item.chord) }}
                                         </span>
                                         <span v-else class="h-4"></span>
-                                        <span class="font-sans text-slate-200 text-base leading-snug whitespace-pre">{{ item.text || ' ' }}</span>
+                                        <span class="font-sans text-slate-200 text-base leading-snug whitespace-pre">{{ item.text }}</span>
                                     </div>
                                 </div>
 
@@ -337,7 +325,6 @@
                     </div>
                 </div>
 
-                <!-- FLOATING TOOLBAR -->
                 <div class="fixed bottom-4 left-1/2 -translate-x-1/2 bg-slate-900/95 border border-slate-700 backdrop-blur-md px-4 py-2.5 rounded-2xl shadow-2xl z-40 flex items-center space-x-4 text-xs">
                     <div class="flex items-center space-x-2 border-r border-slate-800 pr-3">
                         <button @click="toggleAutoScroll" :class="isAutoScrolling ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-300'" class="px-3 py-1.5 rounded-xl font-medium flex items-center space-x-1.5 transition">
@@ -373,7 +360,6 @@
                 </div>
 
                 <div class="p-5 overflow-y-auto space-y-5 text-xs">
-                    <!-- General Song Details -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label class="block text-slate-400 font-medium mb-1">Título de Canción *</label>
@@ -419,7 +405,6 @@
                         </div>
                     </div>
 
-                    <!-- ADVANCED SESSIONS BUILDER SECTION -->
                     <div class="space-y-4 pt-3 border-t border-slate-800">
                         <div class="flex items-center justify-between">
                             <div>
@@ -435,7 +420,6 @@
                             </button>
                         </div>
 
-                        <!-- List of Structured Sections -->
                         <div class="space-y-4">
                             <div v-for="(sec, idx) in builderSections" :key="idx" class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 space-y-3 relative shadow-md">
                                 <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2.5">
@@ -446,7 +430,6 @@
                                         </select>
                                     </div>
 
-                                    <!-- Session Action Controls -->
                                     <div class="flex items-center space-x-1">
                                         <button @click="moveSection(idx, -1)" :disabled="idx === 0" class="p-1.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-30 text-slate-300 rounded-lg text-xs" title="Mover arriba">
                                             <i class="fa-solid fa-arrow-up"></i>
@@ -463,7 +446,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Textarea with Precise Cursor-Isolated Chord Autocomplete -->
                                 <div class="relative">
                                     <textarea 
                                         :id="'section-textarea-' + idx"
@@ -475,7 +457,6 @@
                                         placeholder="Escribe la letra y usa corchetes [C] para los acordes. Presiona [ para sugerencias."
                                         class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-slate-100 font-mono text-xs focus:outline-none focus:border-brand-500 leading-relaxed"></textarea>
 
-                                    <!-- Chord Autocomplete Popup Menu -->
                                     <div v-if="activeAutocompleteIdx === idx" class="absolute z-50 bg-slate-900 border border-brand-500/50 rounded-xl shadow-2xl p-2 w-64 max-h-48 overflow-y-auto mt-1 left-2">
                                         <div class="text-[10px] text-slate-400 px-2 py-1 border-b border-slate-800 flex justify-between items-center font-semibold">
                                             <span>SELECCIONAR ACORDE</span>
@@ -492,7 +473,6 @@
                         </div>
                     </div>
 
-                    <!-- Instrument Specific Arrangements Accordion -->
                     <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-3">
                         <h4 class="font-bold text-slate-300 flex items-center gap-1.5">
                             <i class="fa-solid fa-sliders text-brand-400"></i>
@@ -542,7 +522,6 @@
                 </div>
 
                 <div class="p-5 space-y-4 text-xs">
-                    <!-- New Setlist Form -->
                     <div class="flex gap-2">
                         <input type="text" v-model="newSetlistName" placeholder="Nombre (Ej. Culto domingo 06/09/2026)" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 text-xs focus:outline-none focus:border-brand-500">
                         <button @click="createSetlist" class="px-3 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-xl font-semibold whitespace-nowrap">
@@ -550,7 +529,6 @@
                         </button>
                     </div>
 
-                    <!-- Existing Setlists -->
                     <div class="space-y-2 max-h-60 overflow-y-auto">
                         <div v-for="setlist in setlists" :key="setlist.id" class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
                             <div>
@@ -642,7 +620,7 @@
                 const searchQuery = ref('');
                 const selectedCategoryFilter = ref('');
                 const toastMessage = ref('');
-                const userId = ref('equipo_reina'); // Carpeta central compartida para todo el equipo
+                const userId = ref('equipo_reina');
 
                 const categories = ['Alabanza', 'Adoración', 'Especial', 'Entrada', 'Meditación', 'Ofrenda'];
                 const chromaticKeys = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
@@ -668,9 +646,9 @@
                 const showSetlistModal = ref(false);
                 const newSetlistName = ref('');
                 const editingSong = ref(createEmptySong());
+                const originalSongKeyForTransposition = ref('C');
                 const builderSections = ref([]);
 
-                // States for chord autocomplete at cursor position
                 const activeAutocompleteIdx = ref(null);
                 const suggestedChordsList = ref(['C', 'G', 'Am', 'F', 'Dm', 'Em', 'A', 'D', 'E', 'B7', 'G7', 'C7', 'F#m', 'Bm', 'Bb', 'Eb']);
 
@@ -800,12 +778,63 @@
                     initFirebase();
                 });
 
-                // --- Cloud Database Write Methods ---
+                // Transposition helper for note distance calculation
+                function getSemitoneDistance(keyFrom, keyTo) {
+                    let idxFrom = notesSharp.indexOf(keyFrom);
+                    if (idxFrom === -1) idxFrom = notesFlat.indexOf(keyFrom);
+                    let idxTo = notesSharp.indexOf(keyTo);
+                    if (idxTo === -1) idxTo = notesFlat.indexOf(keyTo);
+
+                    if (idxFrom === -1 || idxTo === -1) return 0;
+                    let diff = idxTo - idxFrom;
+                    return diff;
+                }
+
+                // Transpose all chords in a raw text string
+                function transposeTextContent(contentStr, semitones) {
+                    if (!contentStr || semitones === 0) return contentStr;
+                    return contentStr.replace(/\[([A-G][b#]?[^\]]*)\]/g, (match, chordGroup) => {
+                        const transposedChord = chordGroup.replace(/([A-G][b#]?)/g, (m) => {
+                            let isFlat = m.includes('b');
+                            let scale = isFlat ? notesFlat : notesSharp;
+                            let index = scale.indexOf(m);
+                            if (index === -1) {
+                                index = (isFlat ? notesSharp : notesFlat).indexOf(m);
+                                scale = notesSharp;
+                            }
+                            if (index === -1) return m;
+                            let transposedIndex = (index + semitones) % 12;
+                            if (transposedIndex < 0) transposedIndex += 12;
+                            return scale[transposedIndex];
+                        });
+                        return `[${transposedChord}]`;
+                    });
+                }
+
+                function onKeyChanged() {
+                    const newKey = editingSong.value.key;
+                    const semitones = getSemitoneDistance(originalSongKeyForTransposition.value, newKey);
+                    if (semitones !== 0) {
+                        builderSections.value.forEach(sec => {
+                            sec.content = transposeTextContent(sec.content, semitones);
+                        });
+                        originalSongKeyForTransposition.value = newKey;
+                        showToast(`Acordes transportados automáticamente a ${newKey}`);
+                    }
+                }
+
+                // --- Cloud Database Write Methods with Instant UI Refresh ---
                 async function saveSong() {
                     if (!editingSong.value.title) return showToast("El título es obligatorio");
                     if (!userId.value) return;
 
-                    // Compilar el contenido de las secciones estructuradas de vuelta al string completo de la canción
+                    // Ensure clean single-bracket format {acorde] or [acorde] without nested duplicates
+                    builderSections.value.forEach(sec => {
+                        if (sec.content) {
+                            sec.content = sec.content.replace(/\[+/g, '[').replace(/\]+/g, ']');
+                        }
+                    });
+
                     editingSong.value.content = builderSections.value.map(sec => `[${sec.type}]\n${sec.content}`).join('\n\n');
 
                     if (activeSetlist.value) {
@@ -814,18 +843,38 @@
                             activeSetlist.value.songs[index] = { ...editingSong.value };
                             const setlistRef = doc(db, 'artifacts', appId, 'users', userId.value, 'setlists', activeSetlist.value.id);
                             await updateDoc(setlistRef, { songs: activeSetlist.value.songs });
-                            showToast("Cambios guardados solo en este evento temporal");
+                        } else {
+                            // If it was added to setlist
+                            activeSetlist.value.songs.push({ ...editingSong.value });
+                            const setlistRef = doc(db, 'artifacts', appId, 'users', userId.value, 'setlists', activeSetlist.value.id);
+                            await updateDoc(setlistRef, { songs: activeSetlist.value.songs });
                         }
+                        
+                        // Instant UI Refresh for Setlist View
                         if (activeSong.value && activeSong.value.id === editingSong.value.id) {
                             activeSong.value = { ...editingSong.value };
                         }
+                        showToast("Cambios guardados instantáneamente en este repertorio temporal");
                     } else {
                         const id = editingSong.value.id || ('song-' + Date.now());
                         const songData = { ...editingSong.value, id };
                         
                         const songRef = doc(db, 'artifacts', appId, 'users', userId.value, 'songs', id);
                         await setDoc(songRef, songData);
-                        showToast("Canción guardada en la biblioteca principal");
+
+                        // Instant UI Refresh for Main Library View
+                        const existingIdx = songs.value.findIndex(s => s.id === id);
+                        if (existingIdx !== -1) {
+                            songs.value[existingIdx] = songData;
+                        } else {
+                            songs.value.push(songData);
+                        }
+                        songs.value.sort((a, b) => a.title.localeCompare(b.title));
+
+                        if (activeSong.value && activeSong.value.id === id) {
+                            activeSong.value = { ...songData };
+                        }
+                        showToast("Canción guardada instantáneamente en la biblioteca principal");
                     }
                     
                     showSongModal.value = false;
@@ -838,10 +887,11 @@
                         activeSetlist.value.songs = activeSetlist.value.songs.filter(s => s.id !== song.id);
                         const setlistRef = doc(db, 'artifacts', appId, 'users', userId.value, 'setlists', activeSetlist.value.id);
                         await updateDoc(setlistRef, { songs: activeSetlist.value.songs });
-                        showToast("Canción removida del evento (intacta en tu biblioteca)");
+                        showToast("Canción removida del evento");
                     } else {
                         const songRef = doc(db, 'artifacts', appId, 'users', userId.value, 'songs', song.id);
                         await deleteDoc(songRef);
+                        songs.value = songs.value.filter(s => s.id !== song.id);
                         showToast("Canción eliminada permanentemente");
                     }
                     
@@ -861,6 +911,7 @@
                     const setlistRef = doc(db, 'artifacts', appId, 'users', userId.value, 'setlists', id);
                     await setDoc(setlistRef, setlistData);
 
+                    setlists.value.push(setlistData);
                     newSetlistName.value = '';
                     showSetlistModal.value = false;
                     showToast("Repertorio temporal creado vacío");
@@ -871,13 +922,13 @@
                     const setlistRef = doc(db, 'artifacts', appId, 'users', userId.value, 'setlists', id);
                     await deleteDoc(setlistRef);
                     
+                    setlists.value = setlists.value.filter(s => s.id !== id);
                     if (activeSetlist.value && activeSetlist.value.id === id) {
                         activeSetlist.value = null;
                     }
                     showToast("Repertorio eliminado");
                 }
 
-                // --- UI & Cursor-Isolated Chord Builder Logic ---
                 const availableSessionTypes = [
                     { name: 'Intro', category: 'Musical' },
                     { name: 'Estrofa 1', category: 'Verso' },
@@ -947,11 +998,9 @@
                 function onSectionInput(event, idx) {
                     const val = event.target.value;
                     const cursorPos = event.target.selectionStart;
-                    // Si el usuario acaba de escribir '[', activamos el menú flotante exclusivamente para este textarea
                     if (cursorPos > 0 && val[cursorPos - 1] === '[') {
                         activeAutocompleteIdx.value = idx;
                     } else {
-                        // Si escribe otra cosa, evaluamos si sigue en un corchete activo o lo cerramos
                         const lastOpen = val.lastIndexOf('[', cursorPos - 1);
                         const lastClose = val.lastIndexOf(']', cursorPos - 1);
                         if (lastOpen === -1 || lastClose > lastOpen) {
@@ -967,7 +1016,6 @@
                 }
 
                 function onSectionClick(idx) {
-                    // Al hacer click, verificamos si el cursor está justo después de un corchete abierto
                     const textarea = document.getElementById('section-textarea-' + idx);
                     if (!textarea) return;
                     const cursorPos = textarea.selectionStart;
@@ -987,8 +1035,12 @@
                     const end = textarea.selectionEnd;
                     const val = textarea.value;
 
-                    // Inserta exactamente en la posición del cursor de este textarea sin alterar ninguna otra sección ni posición
-                    const chordInsert = chord + ']';
+                    // Ensure clean single bracket format without adding extra brackets if already present
+                    let chordInsert = chord + ']';
+                    if (val.substring(start, start + 1) === ']') {
+                        chordInsert = chord; // if closing bracket already exists right ahead
+                    }
+
                     const newVal = val.substring(0, start) + chordInsert + val.substring(end);
                     
                     builderSections.value[idx].content = newVal;
@@ -1022,12 +1074,14 @@
 
                 function openNewSongModal() {
                     editingSong.value = createEmptySong();
+                    originalSongKeyForTransposition.value = 'C';
                     builderSections.value = [{ type: 'Estrofa 1', content: '' }];
                     showSongModal.value = true;
                 }
 
                 function editSong(song) {
                     editingSong.value = JSON.parse(JSON.stringify(song));
+                    originalSongKeyForTransposition.value = song.key || 'C';
                     builderSections.value = parseSongIntoBuilderSections(song.content);
                     showSongModal.value = true;
                 }
@@ -1073,7 +1127,7 @@
                     await updateDoc(setlistRef, { songs: activeSetlist.value.songs });
                     
                     showAddSongModal.value = false;
-                    showToast("Agregada al evento (Puedes editarla sin afectar la original)");
+                    showToast("Agregada al evento temporal");
                 }
 
                 function getInstrumentName(id) {
@@ -1189,6 +1243,7 @@
                     return 'fa-solid fa-align-left';
                 }
 
+                // Enhanced parser to avoid breaking words when chords are in the middle (e.g. Tu mi[F]sericordia -> keeps word together without awkward gaps)
                 function parseLineWithChords(line) {
                     const items = [];
                     const regex = /\[(.*?)\]/g;
@@ -1198,16 +1253,24 @@
                         const chord = match[1];
                         if (match.index > lastIdx) {
                             const pText = line.substring(lastIdx, match.index);
-                            if (items.length > 0 && !items[items.length - 1].text) items[items.length - 1].text = pText;
-                            else items.push({ chord: '', text: pText });
+                            if (items.length > 0 && !items[items.length - 1].text) {
+                                items[items.length - 1].text = pText;
+                            } else {
+                                items.push({ chord: '', text: pText });
+                            }
+                        } else if (items.length === 0) {
+                            items.push({ chord: '', text: '' });
                         }
                         items.push({ chord: chord, text: '' });
                         lastIdx = regex.lastIndex;
                     }
                     if (lastIdx < line.length) {
                         const rText = line.substring(lastIdx);
-                        if (items.length > 0 && !items[items.length - 1].text) items[items.length - 1].text = rText;
-                        else items.push({ chord: '', text: rText });
+                        if (items.length > 0 && !items[items.length - 1].text) {
+                            items[items.length - 1].text = rText;
+                        } else {
+                            items.push({ chord: '', text: rText });
+                        }
                     }
                     return items;
                 }
@@ -1271,7 +1334,7 @@
                     isAutoScrolling, scrollSpeed, isMetronomeActive,
                     openNewSongModal, editSong, saveSong, confirmDeleteSong, openSong,
                     openSetlistModal, createSetlist, deleteSetlist, selectSetlist,
-                    transpose, transposeChord, getInstrumentName,
+                    transpose, transposeChord, getInstrumentName, onKeyChanged,
                     getSessionContainerStyle, getSessionHeaderBadgeStyle, getSessionIcon,
                     toggleAutoScroll, toggleMetronome, userEmail, loginWithGoogle, volverAlHome,
                     addNewSection, moveSection, cloneSection, removeSection
