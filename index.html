@@ -1259,9 +1259,9 @@
                                 items.push({ chord: '', text: pText });
                             }
                         } else if (items.length === 0) {
-                            items.push({ chord: '', text: '' });
+                            items.push({ chord: '', text: ' ' }); // Espacio en vez de vacío
                         }
-                        items.push({ chord: chord, text: '' });
+                        items.push({ chord: chord, text: ' ' }); // Espacio por defecto
                         lastIdx = regex.lastIndex;
                     }
                     if (lastIdx < line.length) {
