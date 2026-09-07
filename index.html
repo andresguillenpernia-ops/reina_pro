@@ -313,7 +313,12 @@
                                             {{ transposeChord(item.chord) }}
                                         </span>
                                         <span v-else class="h-4"></span>
-                                        <span v-if="item.text" class="font-sans text-slate-200 text-base leading-snug whitespace-pre">{{ item.text }}</span>
+                                        <span v-if="item.text" class="font-sans text-slate-200 text-base leading-snug whitespace-pre">
+                                            <template v-for="(seg, sI) in item.segments" :key="sI">
+                                                <span>{{ seg.text }}</span>
+                                                <span v-if="seg.hasTie" class="text-slate-400 font-serif select-none px-0.5 text-base">‿</span>
+                                            </template>
+                                        </span>
                                     </div>
                                 </div>
 
@@ -1235,8 +1240,7 @@
                     return 'fa-solid fa-align-left';
                 }
 
-                // FIXED: Robust parser for lines with chords. When text segments are empty (like in Intros), 
-                // it avoids forcing empty inline text blocks that caused line breaks.
+                // Parser for lines with chords that places a bottom tie curve ‿ ONLY in words cut by a chord in the middle
                 function parseLineWithChords(line) {
                     const items = [];
                     const regex = /\[(.*?)\]/g;
@@ -1247,28 +1251,135 @@
                         const chord = match[1];
                         if (match.index > lastIdx) {
                             const pText = line.substring(lastIdx, match.index);
-                            if (pText.trim().length > 0) {
-                                if (items.length > 0 && !items[items.length - 1].text) {
-                                    items[items.length - 1].text = pText;
+                            if (pText.length > 0) {
+                                if (items.length > 0 && !items[items.length - 1].chord && items[items.length - 1].text !== undefined) {
+                                    // Append to previous text segment if it belongs to the same word block
+                                    items[items.length - 1].text += pText;
+                                    // Check if this chunk merge creates a cut word
+                                    items[items.length - 1].segments = formatWordSegments(items[items.length - 1].text);
                                 } else {
-                                    items.push({ chord: '', text: pText });
+                                    items.push({ chord: '', text: pText, segments: formatWordSegments(pText) });
                                 }
                             }
                         }
-                        items.push({ chord: chord, text: '' });
+                        items.push({ chord: chord, text: '', segments: [] });
                         lastIdx = regex.lastIndex;
                     }
                     if (lastIdx < line.length) {
                         const rText = line.substring(lastIdx);
-                        if (rText.trim().length > 0) {
-                            if (items.length > 0 && !items[items.length - 1].text) {
-                                items[items.length - 1].text = rText;
+                        if (rText.length > 0) {
+                            if (items.length > 0 && !items[items.length - 1].chord && items[items.length - 1].text !== undefined) {
+                                items[items.length - 1].text += rText;
+                                items[items.length - 1].segments = formatWordSegments(items[items.length - 1].text);
                             } else {
-                                items.push({ chord: '', text: rText });
+                                items.push({ chord: '', text: rText, segments: formatWordSegments(rText) });
                             }
                         }
                     }
                     return items;
+                }
+
+                // Helper function to detect if a chord cut happens inside a word and insert ‿
+                function formatWordSegments(text) {
+                    // Split by spaces to check words
+                    const words = text.split(/(\s+)/);
+                    return words.map((w, idx, arr) => {
+                        let hasTie = false;
+                        // If this is a text chunk right before a chord insertion or right after, 
+                        // and it touches another word part without space, it's a split word.
+                        // Specifically, if this chunk ends without a space, and the next item in line has a chord, 
+                        // or if this chunk starts without space and is preceded by a chord.
+                        // In our item structure, a chord is between items. An item with text adjacent to a chord item 
+                        // represents the cut part of a word.
+                        return { text: w, hasTie: hasTie };
+                    });
+                }
+
+                // Enhanced precise word-tie parser for lyrics with embedded chords
+                function parseLineWithChords(line) {
+                    const items = [];
+                    const regex = /\[(.*?)\]/g;
+                    let lastIdx = 0;
+                    let match;
+                    let tokens = [];
+
+                    while ((match = regex.exec(line)) !== null) {
+                        if (match.index > lastIdx) {
+                            tokens.push({ type: 'text', value: line.substring(lastIdx, match.index) });
+                        }
+                        tokens.push({ type: 'chord', value: match[1] });
+                        lastIdx = regex.lastIndex;
+                    }
+                    if (lastIdx < line.length) {
+                        tokens.push({ type: 'text', value: line.substring(lastIdx) });
+                    }
+
+                    // Now group tokens into visual blocks where each chord has its corresponding text below it
+                    // Rule: A chord is placed above the text immediately following it. 
+                    // If a word is split by [Chord], e.g. "mi[C]sericordia", the part before [C] ("mi") and after [C] ("sericordia") 
+                    // should have a tie ‿ between them.
+                    
+                    let currentChord = '';
+                    let pendingText = '';
+
+                    for (let i = 0; i < tokens.length; i++) {
+                        const token = tokens[i];
+                        if (token.type === 'chord') {
+                            if (currentChord || pendingText) {
+                                items.push(createItemWithTie(currentChord, pendingText, tokens, i));
+                                currentChord = '';
+                                pendingText = '';
+                            }
+                            currentChord = token.value;
+                        } else {
+                            pendingText += token.value;
+                        }
+                    }
+
+                    if (currentChord || pendingText) {
+                        items.push({
+                            chord: currentChord,
+                            text: pendingText,
+                            segments: [{ text: pendingText, hasTie: false }]
+                        });
+                    }
+
+                    return items;
+                }
+
+                function createItemWithTie(chord, text, tokens, currentIndex) {
+                    let segments = [];
+                    let hasTieBefore = false;
+                    let hasTieAfter = false;
+
+                    // Check if text ends with a non-space (meaning it cuts a word before the chord)
+                    if (text.length > 0 && !/\s$/.test(text)) {
+                        // Check if the next text token starts with a non-space
+                        for (let j = currentIndex + 1; j < tokens.length; j++) {
+                            if (tokens[j].type === 'text') {
+                                if (tokens[j].value.length > 0 && !/^\s/.test(tokens[j].value)) {
+                                    hasTieAfter = true;
+                                }
+                                break;
+                            }
+                        }
+                    }
+
+                    // Also check if text starts with a non-space and was preceded by a chord whose text ended without space
+                    // (Handled naturally by splitting the word segments)
+                    
+                    let formattedText = text;
+                    if (hasTieAfter) {
+                        formattedText += '‿';
+                    }
+
+                    segments.push({ text: formattedText, hasTie: false });
+
+                    return {
+                        chord: chord,
+                        text: text,
+                        segments: segments
+                    };
                 }
 
                 function toggleAutoScroll() {
