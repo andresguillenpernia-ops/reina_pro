@@ -313,7 +313,7 @@
                                             {{ transposeChord(item.chord) }}
                                         </span>
                                         <span v-else class="h-4"></span>
-                                        <span class="font-sans text-slate-200 text-base leading-snug whitespace-pre">{{ item.text }}</span>
+                                        <span v-if="item.text" class="font-sans text-slate-200 text-base leading-snug whitespace-pre">{{ item.text }}</span>
                                     </div>
                                 </div>
 
@@ -778,7 +778,6 @@
                     initFirebase();
                 });
 
-                // Transposition helper for note distance calculation
                 function getSemitoneDistance(keyFrom, keyTo) {
                     let idxFrom = notesSharp.indexOf(keyFrom);
                     if (idxFrom === -1) idxFrom = notesFlat.indexOf(keyFrom);
@@ -790,7 +789,6 @@
                     return diff;
                 }
 
-                // Transpose all chords in a raw text string
                 function transposeTextContent(contentStr, semitones) {
                     if (!contentStr || semitones === 0) return contentStr;
                     return contentStr.replace(/\[([A-G][b#]?[^\]]*)\]/g, (match, chordGroup) => {
@@ -823,12 +821,10 @@
                     }
                 }
 
-                // --- Cloud Database Write Methods with Instant UI Refresh ---
                 async function saveSong() {
                     if (!editingSong.value.title) return showToast("El título es obligatorio");
                     if (!userId.value) return;
 
-                    // Ensure clean single-bracket format {acorde] or [acorde] without nested duplicates
                     builderSections.value.forEach(sec => {
                         if (sec.content) {
                             sec.content = sec.content.replace(/\[+/g, '[').replace(/\]+/g, ']');
@@ -844,13 +840,11 @@
                             const setlistRef = doc(db, 'artifacts', appId, 'users', userId.value, 'setlists', activeSetlist.value.id);
                             await updateDoc(setlistRef, { songs: activeSetlist.value.songs });
                         } else {
-                            // If it was added to setlist
                             activeSetlist.value.songs.push({ ...editingSong.value });
                             const setlistRef = doc(db, 'artifacts', appId, 'users', userId.value, 'setlists', activeSetlist.value.id);
                             await updateDoc(setlistRef, { songs: activeSetlist.value.songs });
                         }
                         
-                        // Instant UI Refresh for Setlist View
                         if (activeSong.value && activeSong.value.id === editingSong.value.id) {
                             activeSong.value = { ...editingSong.value };
                         }
@@ -862,7 +856,6 @@
                         const songRef = doc(db, 'artifacts', appId, 'users', userId.value, 'songs', id);
                         await setDoc(songRef, songData);
 
-                        // Instant UI Refresh for Main Library View
                         const existingIdx = songs.value.findIndex(s => s.id === id);
                         if (existingIdx !== -1) {
                             songs.value[existingIdx] = songData;
@@ -1035,10 +1028,9 @@
                     const end = textarea.selectionEnd;
                     const val = textarea.value;
 
-                    // Ensure clean single bracket format without adding extra brackets if already present
                     let chordInsert = chord + ']';
                     if (val.substring(start, start + 1) === ']') {
-                        chordInsert = chord; // if closing bracket already exists right ahead
+                        chordInsert = chord;
                     }
 
                     const newVal = val.substring(0, start) + chordInsert + val.substring(end);
@@ -1243,33 +1235,37 @@
                     return 'fa-solid fa-align-left';
                 }
 
-                // Enhanced parser to avoid breaking words when chords are in the middle (e.g. Tu mi[F]sericordia -> keeps word together without awkward gaps)
+                // FIXED: Robust parser for lines with chords. When text segments are empty (like in Intros), 
+                // it avoids forcing empty inline text blocks that caused line breaks.
                 function parseLineWithChords(line) {
                     const items = [];
                     const regex = /\[(.*?)\]/g;
                     let lastIdx = 0;
                     let match;
+                    
                     while ((match = regex.exec(line)) !== null) {
                         const chord = match[1];
                         if (match.index > lastIdx) {
                             const pText = line.substring(lastIdx, match.index);
-                            if (items.length > 0 && !items[items.length - 1].text) {
-                                items[items.length - 1].text = pText;
-                            } else {
-                                items.push({ chord: '', text: pText });
+                            if (pText.trim().length > 0) {
+                                if (items.length > 0 && !items[items.length - 1].text) {
+                                    items[items.length - 1].text = pText;
+                                } else {
+                                    items.push({ chord: '', text: pText });
+                                }
                             }
-                        } else if (items.length === 0) {
-                            items.push({ chord: '', text: '' });
                         }
                         items.push({ chord: chord, text: '' });
                         lastIdx = regex.lastIndex;
                     }
                     if (lastIdx < line.length) {
                         const rText = line.substring(lastIdx);
-                        if (items.length > 0 && !items[items.length - 1].text) {
-                            items[items.length - 1].text = rText;
-                        } else {
-                            items.push({ chord: '', text: rText });
+                        if (rText.trim().length > 0) {
+                            if (items.length > 0 && !items[items.length - 1].text) {
+                                items[items.length - 1].text = rText;
+                            } else {
+                                items.push({ chord: '', text: rText });
+                            }
                         }
                     }
                     return items;
