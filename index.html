@@ -988,7 +988,8 @@
 
                     builderSections.value.forEach(sec => {
                         if (sec.content) {
-                            sec.content = sec.content.replace(/\[+/g, '[').replace(/\]+/g, ']');
+                            // CORRECCIÓN: Limpia corchetes duplicados y remueve todo el espacio/líneas vacías del final
+                            sec.content = sec.content.replace(/\[+/g, '[').replace(/\]+/g, ']').trimEnd();
                         }
                     });
 
