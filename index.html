@@ -15,7 +15,7 @@
     <link rel="icon" type="image/png" sizes="192x192" href="android-chrome-192x192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="android-chrome-512x512.png">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
-    <link rel="manifest" href="site.webmanifest?v=15.1.1">
+    <link rel="manifest" href="site.webmanifest?v=15.1.2">
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -75,6 +75,21 @@
             border-radius: 4px;
             margin-right: 2px;
         }
+        /* Estilos musicales para sostenidos y bemoles */
+        .music-accidental-sharp {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9em;
+            vertical-align: super;
+            margin-left: 1px;
+            font-weight: 800;
+        }
+        .music-accidental-flat {
+            font-family: 'Inter', sans-serif;
+            font-size: 1.05em;
+            vertical-align: super;
+            margin-left: 1px;
+            font-weight: 800;
+        }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-brand-500 selection:text-white">
@@ -100,7 +115,7 @@
                 <h1 class="text-xl font-bold text-slate-100 tracking-tight flex items-center gap-1.5 transition select-none pl-1">
                     <span class="font-black text-white tracking-tight">Reina</span>
                     <span class="bg-[#3b30e3] text-white text-[9px] font-black uppercase px-1.5 py-0.5 rounded border border-[#4c41f5]/60 tracking-wider leading-none shadow-sm shadow-[#3b30e3]/30">PRO</span>
-                    <span class="text-[10px] text-slate-500 font-medium tracking-wide self-end mb-0.5">v15.1.1</span>
+                    <span class="text-[10px] text-slate-500 font-medium tracking-wide self-end mb-0.5">v15.1.2</span>
                 </h1>
             </div>
             <div class="flex items-center space-x-2">
@@ -169,8 +184,7 @@
                         <div>
                             <div class="flex items-start justify-between gap-2 mb-1.5">
                                 <h3 class="font-bold text-slate-100 group-hover:text-brand-300 transition text-base line-clamp-1">{{ song.title }}</h3>
-                                <span class="px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 whitespace-nowrap">
-                                    {{ song.key }}
+                                <span class="px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 whitespace-nowrap" v-html="formatChordHTML(song.key)">
                                 </span>
                             </div>
                             <p class="text-xs text-slate-400 mb-3 flex items-center gap-1">
@@ -263,8 +277,7 @@
                             <button @click="transpose(-1)" class="w-7 h-7 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-lg flex items-center justify-center transition">
                                 -1
                             </button>
-                            <span class="font-bold text-amber-400 font-mono text-sm px-2 bg-amber-500/10 rounded-md border border-amber-500/20 min-w-[36px] text-center">
-                                {{ currentKey }}
+                            <span class="font-bold text-amber-400 font-mono text-sm px-2 bg-amber-500/10 rounded-md border border-amber-500/20 min-w-[42px] text-center" v-html="formatChordHTML(currentKey)">
                             </span>
                             <button @click="transpose(1)" class="w-7 h-7 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-lg flex items-center justify-center transition">
                                 +1
@@ -310,8 +323,7 @@
                                 
                                 <div v-if="line.hasChords" class="flex flex-wrap items-end gap-x-1 gap-y-1 font-mono-chord text-sm leading-snug">
                                     <div v-for="(item, iIdx) in line.items" :key="iIdx" class="inline-flex flex-col">
-                                        <span v-if="item.chord" class="font-bold text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded text-xs leading-none mb-1 border border-amber-400/20 text-center shadow-xs">
-                                            {{ transposeChord(item.chord) }}
+                                        <span v-if="item.chord" class="font-bold text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded text-xs leading-none mb-1 border border-amber-400/20 text-center shadow-xs" v-html="formatChordHTML(transposeChord(item.chord))">
                                         </span>
                                         <span v-else class="h-4"></span>
                                         <span v-if="item.text" class="font-sans text-slate-200 text-base leading-snug whitespace-pre">{{ item.text }}</span>
@@ -458,21 +470,19 @@
                                         placeholder="Escribe la letra y usa corchetes [C] para los acordes. Presiona [ para sugerencias."
                                         class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-slate-100 font-mono text-xs focus:outline-none focus:border-brand-500 leading-relaxed"></textarea>
 
-                                    <div v-if="activeAutocompleteIdx === idx" class="absolute z-50 bg-slate-900 border border-brand-500/50 rounded-xl shadow-2xl p-2 w-64 max-h-48 overflow-y-auto mt-1 left-2">
+                                    <div v-if="activeAutocompleteIdx === idx" class="absolute z-50 bg-slate-900 border border-brand-500/50 rounded-xl shadow-2xl p-2 w-72 max-h-52 overflow-y-auto mt-1 left-2">
                                         <div class="text-[10px] text-slate-400 px-2 py-1 border-b border-slate-800 flex justify-between items-center font-semibold">
                                             <span>SELECCIONAR ACORDE</span>
                                             <span class="text-brand-400">Esc: Cerrar</span>
                                         </div>
                                         <div class="grid grid-cols-4 gap-1 pt-1">
-                                            <button v-for="chord in suggestedChordsList" :key="chord" @click.prevent="insertChordAtCursor(idx, chord)" class="bg-slate-800 hover:bg-brand-600 hover:text-white text-slate-200 text-xs font-mono font-bold py-1.5 rounded-lg border border-slate-700/60 transition text-center">
-                                                {{ chord }}
+                                            <button v-for="chord in suggestedChordsList" :key="chord" @click.prevent="insertChordAtCursor(idx, chord)" class="bg-slate-800 hover:bg-brand-600 hover:text-white text-slate-200 text-xs font-mono font-bold py-1.5 rounded-lg border border-slate-700/60 transition text-center" v-html="formatChordHTML(chord)">
                                             </button>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Botón Agregar Sección también al final de la última sesión -->
                             <div class="pt-2 flex justify-center">
                                 <button @click="addNewSection" class="w-full py-2.5 bg-slate-900 hover:bg-brand-600/20 text-brand-300 border border-brand-500/30 rounded-xl font-semibold text-xs flex items-center justify-center space-x-2 transition shadow-sm">
                                     <i class="fa-solid fa-plus text-xs"></i>
@@ -582,7 +592,7 @@
                     <div v-for="song in addableSongs" :key="song.id" class="bg-slate-950 hover:bg-slate-800 border border-slate-800 p-3 rounded-xl flex items-center justify-between transition group">
                         <div>
                             <h4 class="font-bold text-slate-200 text-sm line-clamp-1">{{ song.title }}</h4>
-                            <p class="text-[11px] text-slate-400">{{ song.artist || 'Sin artista' }} • Tono: {{ song.key }}</p>
+                            <p class="text-[11px] text-slate-400">{{ song.artist || 'Sin artista' }} • Tono: <span v-html="formatChordHTML(song.key)"></span></p>
                         </div>
                         <button @click="addSongToSetlist(song)" class="px-3 py-1.5 bg-slate-800 group-hover:bg-brand-600 text-slate-300 group-hover:text-white rounded-lg text-xs font-medium border border-slate-700 group-hover:border-brand-500 transition shrink-0 ml-2">
                             <i class="fa-solid fa-plus mr-1"></i>Agregar
@@ -632,7 +642,12 @@
                 const userId = ref('equipo_reina');
 
                 const categories = ['Alabanza', 'Adoración', 'Especial', 'Entrada', 'Meditación', 'Ofrenda'];
-                const chromaticKeys = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
+                
+                // Lista exacta requerida de todas las tonalidades principales (mayores y menores con sostenidos y bemoles)
+                const chromaticKeys = [
+                    'C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'G#', 'Ab', 'A#', 'Bb', 'B',
+                    'Cm', 'C#m', 'Dbm', 'Dm', 'D#m', 'Ebm', 'Em', 'Fm', 'F#m', 'Gbm', 'Gm', 'G#m', 'Abm', 'A#m', 'Bbm', 'Bm'
+                ];
                 
                 const availableSessionTypes = [
                     'INTRO', 
@@ -673,7 +688,11 @@
                 const builderSections = ref([]);
 
                 const activeAutocompleteIdx = ref(null);
-                const suggestedChordsList = ref(['C', 'G', 'Am', 'F', 'Dm', 'Em', 'A', 'D', 'E', 'B7', 'G7', 'C7', 'F#m', 'Bm', 'Bb', 'Eb']);
+                const suggestedChordsList = ref([
+                    'C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'G#', 'Ab', 'A#', 'Bb', 'B',
+                    'Cm', 'C#m', 'Dm', 'D#m', 'Ebm', 'Em', 'Fm', 'F#m', 'Gm', 'G#m', 'Am', 'A#m', 'Bbm', 'Bm',
+                    'C7', 'D7', 'E7', 'F7', 'G7', 'A7', 'B7', 'G/B', 'F/A', 'C/E'
+                ]);
 
                 const showAddSongModal = ref(false);
                 const addSongSearchQuery = ref('');
@@ -686,8 +705,9 @@
                 let audioCtx = null;
                 let metronomeTimer = null;
 
-                const notesSharp = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-                const notesFlat  = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+                // Mapeo semitonal de 12 notas estándar
+                const scaleBaseSharp = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+                const scaleBaseFlat  = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
                 
                 let db;
                 let auth;
@@ -713,6 +733,17 @@
                 function showToast(msg) {
                     toastMessage.value = msg;
                     setTimeout(() => toastMessage.value = '', 3000);
+                }
+
+                // Función clave para formatear texto de acordes reemplazando # por ♯ y b por ♭ con tipografía musical
+                function formatChordHTML(chordStr) {
+                    if (!chordStr) return '';
+                    // Reemplazamos # por símbolo musical sostenido ♯ y b por símbolo musical bemol ♭ (evitando bemoles en medio de palabras si aplica)
+                    let formatted = chordStr
+                        .replace(/#/g, '<span class="music-accidental-sharp">♯</span>')
+                        .replace(/b(?=[0-9mjsdimsus\/]|$)/g, '<span class="music-accidental-flat">♭</span>')
+                        .replace(/b([a-zA-Z])/g, '<span class="music-accidental-flat">♭</span>$1');
+                    return formatted;
                 }
 
                 async function initFirebase() {
@@ -772,7 +803,7 @@
 
                     onSnapshot(songsRef, (snapshot) => {
                         const loadedSongs = [];
-                        snapshot.forEach(doc => loadedSongs.push(doc.data()));
+                        snapshot.forEach(doc => loadedSongs.data() && loadedSongs.push(doc.data()));
                         
                         if (snapshot.empty && isFirstLoad) {
                             defaultSongs.forEach(s => {
@@ -792,7 +823,7 @@
 
                     onSnapshot(setlistsRef, (snapshot) => {
                         const loadedSetlists = [];
-                        snapshot.forEach(doc => loadedSetlists.push(doc.data()));
+                        snapshot.forEach(doc => doc.data() && loadedSetlists.push(doc.data()));
                         setlists.value = loadedSetlists;
                     }, (error) => console.error("Error on setlists snapshot", error));
                 }
@@ -801,33 +832,54 @@
                     initFirebase();
                 });
 
+                function getRootNoteAndModifier(keyStr) {
+                    if (!keyStr) return { root: 'C', suffix: '' };
+                    let match = keyStr.match(/^([A-G][b#]?)(.*)$/);
+                    if (match) {
+                        return { root: match[1], suffix: match[2] };
+                    }
+                    return { root: keyStr, suffix: '' };
+                }
+
+                function getSemitoneIndexOfNote(note) {
+                    let idx = scaleBaseSharp.indexOf(note);
+                    if (idx === -1) idx = scaleBaseFlat.indexOf(note);
+                    return idx;
+                }
+
                 function getSemitoneDistance(keyFrom, keyTo) {
-                    let idxFrom = notesSharp.indexOf(keyFrom);
-                    if (idxFrom === -1) idxFrom = notesFlat.indexOf(keyFrom);
-                    let idxTo = notesSharp.indexOf(keyTo);
-                    if (idxTo === -1) idxTo = notesFlat.indexOf(keyTo);
+                    let parsedFrom = getRootNoteAndModifier(keyFrom);
+                    let parsedTo = getRootNoteAndModifier(keyTo);
+
+                    let idxFrom = getSemitoneIndexOfNote(parsedFrom.root);
+                    let idxTo = getSemitoneIndexOfNote(parsedTo.root);
 
                     if (idxFrom === -1 || idxTo === -1) return 0;
-                    let diff = idxTo - idxFrom;
-                    return diff;
+                    return idxTo - idxFrom;
+                }
+
+                function transposeChordString(chord, semitones) {
+                    if (!chord || semitones === 0) return chord;
+                    // Soporta acordes con barras de bajo (Ej. G/B)
+                    return chord.replace(/([A-G][b#]?)/g, (match) => {
+                        let isFlat = match.includes('b');
+                        let scale = isFlat ? scaleBaseFlat : scaleBaseSharp;
+                        let index = scale.indexOf(match);
+                        if (index === -1) {
+                            index = (isFlat ? scaleBaseSharp : scaleBaseFlat).indexOf(match);
+                            scale = scaleBaseSharp;
+                        }
+                        if (index === -1) return match;
+                        let transposedIndex = (index + semitones) % 12;
+                        if (transposedIndex < 0) transposedIndex += 12;
+                        return scale[transposedIndex];
+                    });
                 }
 
                 function transposeTextContent(contentStr, semitones) {
                     if (!contentStr || semitones === 0) return contentStr;
                     return contentStr.replace(/\[([A-G][b#]?[^\]]*)\]/g, (match, chordGroup) => {
-                        const transposedChord = chordGroup.replace(/([A-G][b#]?)/g, (m) => {
-                            let isFlat = m.includes('b');
-                            let scale = isFlat ? notesFlat : notesSharp;
-                            let index = scale.indexOf(m);
-                            if (index === -1) {
-                                index = (isFlat ? notesSharp : notesFlat).indexOf(m);
-                                scale = notesSharp;
-                            }
-                            if (index === -1) return m;
-                            let transposedIndex = (index + semitones) % 12;
-                            if (transposedIndex < 0) transposedIndex += 12;
-                            return scale[transposedIndex];
-                        });
+                        const transposedChord = transposeChordString(chordGroup, semitones);
                         return `[${transposedChord}]`;
                     });
                 }
@@ -871,7 +923,7 @@
                         if (activeSong.value && activeSong.value.id === editingSong.value.id) {
                             activeSong.value = { ...editingSong.value };
                         }
-                        showToast("Cambios guardados instantáneamente en este repertorio temporal");
+                        showToast("Cambios guardados en este repertorio temporal");
                     } else {
                         const id = editingSong.value.id || ('song-' + Date.now());
                         const songData = { ...editingSong.value, id };
@@ -890,7 +942,7 @@
                         if (activeSong.value && activeSong.value.id === id) {
                             activeSong.value = { ...songData };
                         }
-                        showToast("Canción guardada instantáneamente en la biblioteca principal");
+                        showToast("Canción guardada en la biblioteca principal");
                     }
                     
                     showSongModal.value = false;
@@ -1043,15 +1095,11 @@
                     }
 
                     const newVal = val.substring(0, start) + chordInsert + val.substring(end);
-                    
-                    // 1. Calculamos la posición exacta final antes de aplicar el cambio
                     const newCursorPos = start + chordInsert.length;
 
-                    // 2. Actualizamos el valor reactivo en el modelo de Vue
                     builderSections.value[idx].content = newVal;
                     activeAutocompleteIdx.value = null;
 
-                    // 3. Forzamos el foco y la posición del cursor asegurando que Vue ya actualizó el DOM
                     nextTick(() => {
                         setTimeout(() => {
                             textarea.focus();
@@ -1143,22 +1191,7 @@
                 }
 
                 function transposeChord(chord) {
-                    if (!chord || semitoneOffset.value === 0) return chord;
-                    return chord.replace(/([A-G][b#]?)/g, (match) => {
-                        let isFlat = match.includes('b');
-                        let scale = isFlat ? notesFlat : notesSharp;
-                        let index = scale.indexOf(match);
-
-                        if (index === -1) {
-                            index = (isFlat ? notesSharp : notesFlat).indexOf(match);
-                            scale = notesSharp;
-                        }
-
-                        if (index === -1) return match;
-                        let transposedIndex = (index + semitoneOffset.value) % 12;
-                        if (transposedIndex < 0) transposedIndex += 12;
-                        return scale[transposedIndex];
-                    });
+                    return transposeChordString(chord, semitoneOffset.value);
                 }
 
                 function transpose(semitones) {
@@ -1168,13 +1201,20 @@
                 const currentKey = computed(() => {
                     if (!activeSong.value) return 'C';
                     const originalKey = activeSong.value.key || 'C';
-                    let index = notesSharp.indexOf(originalKey);
-                    if (index === -1) index = notesFlat.indexOf(originalKey);
+                    
+                    // Si el tono tiene 'm' menor, lo separamos para transportar la raíz y reanexar la 'm'
+                    let isMinor = originalKey.endsWith('m') && !originalKey.endsWith('dim');
+                    let rootPart = isMinor ? originalKey.substring(0, originalKey.length - 1) : originalKey;
+
+                    let parsed = getRootNoteAndModifier(rootPart);
+                    let index = getSemitoneIndexOfNote(parsed.root);
                     if (index === -1) return originalKey;
 
                     let newIndex = (index + semitoneOffset.value) % 12;
                     if (newIndex < 0) newIndex += 12;
-                    return notesSharp[newIndex];
+                    
+                    let transposedRoot = scaleBaseSharp[newIndex];
+                    return transposedRoot + (isMinor ? 'm' : '');
                 });
 
                 const capoSuggestion = computed(() => {
@@ -1360,6 +1400,7 @@
                     openNewSongModal, editSong, saveSong, confirmDeleteSong, openSong,
                     openSetlistModal, createSetlist, deleteSetlist, selectSetlist,
                     transpose, transposeChord, getInstrumentName, onKeyChanged,
+                    formatChordHTML,
                     getSessionContainerStyle, getSessionDividerStyle, getSessionHeaderBadgeStyle, getSessionIcon,
                     toggleAutoScroll, toggleMetronome, userEmail, loginWithGoogle, volverAlHome,
                     addNewSection, moveSection, cloneSection, removeSection
