@@ -75,7 +75,6 @@
             border-radius: 4px;
             margin-right: 2px;
         }
-        /* Estilos musicales para sostenidos y bemoles */
         .music-accidental-sharp {
             font-family: 'Inter', sans-serif;
             font-size: 0.9em;
@@ -470,14 +469,40 @@
                                         placeholder="Escribe la letra y usa corchetes [C] para los acordes. Presiona [ para sugerencias."
                                         class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-slate-100 font-mono text-xs focus:outline-none focus:border-brand-500 leading-relaxed"></textarea>
 
-                                    <div v-if="activeAutocompleteIdx === idx" class="absolute z-50 bg-slate-900 border border-brand-500/50 rounded-xl shadow-2xl p-2 w-72 max-h-52 overflow-y-auto mt-1 left-2">
-                                        <div class="text-[10px] text-slate-400 px-2 py-1 border-b border-slate-800 flex justify-between items-center font-semibold">
-                                            <span>SELECCIONAR ACORDE</span>
+                                    <div v-if="activeAutocompleteIdx === idx" class="absolute z-50 bg-slate-900 border border-brand-500/50 rounded-xl shadow-2xl p-3 w-80 max-h-64 overflow-y-auto mt-1 left-2">
+                                        <div class="text-[10px] text-slate-400 px-1 py-1 border-b border-slate-800 flex justify-between items-center font-semibold mb-2">
+                                            <span>SELECCIONAR ACORDE (Escala de {{ editingSong.key }})</span>
                                             <span class="text-brand-400">Esc: Cerrar</span>
                                         </div>
-                                        <div class="grid grid-cols-4 gap-1 pt-1">
-                                            <button v-for="chord in suggestedChordsList" :key="chord" @click.prevent="insertChordAtCursor(idx, chord)" class="bg-slate-800 hover:bg-brand-600 hover:text-white text-slate-200 text-xs font-mono font-bold py-1.5 rounded-lg border border-slate-700/60 transition text-center" v-html="formatChordHTML(chord)">
-                                            </button>
+                                        <div class="space-y-2">
+                                            <div>
+                                                <div class="text-[9px] text-brand-400 uppercase tracking-wider font-bold mb-1">1. Diatónicos Naturales (7)</div>
+                                                <div class="grid grid-cols-4 gap-1">
+                                                    <button v-for="chord in suggestedChordsList.natural" :key="chord" @click.prevent="insertChordAtCursor(idx, chord)" class="bg-slate-800 hover:bg-brand-600 hover:text-white text-slate-200 text-xs font-mono font-bold py-1.5 rounded-lg border border-slate-700/60 transition text-center" v-html="formatChordHTML(chord)">
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="text-[9px] text-brand-400 uppercase tracking-wider font-bold mb-1">2. Con Séptima (7)</div>
+                                                <div class="grid grid-cols-4 gap-1">
+                                                    <button v-for="chord in suggestedChordsList.seventh" :key="chord" @click.prevent="insertChordAtCursor(idx, chord)" class="bg-slate-800 hover:bg-brand-600 hover:text-white text-slate-200 text-xs font-mono font-bold py-1.5 rounded-lg border border-slate-700/60 transition text-center" v-html="formatChordHTML(chord)">
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="text-[9px] text-brand-400 uppercase tracking-wider font-bold mb-1">3. Con Novena (7)</div>
+                                                <div class="grid grid-cols-4 gap-1">
+                                                    <button v-for="chord in suggestedChordsList.ninth" :key="chord" @click.prevent="insertChordAtCursor(idx, chord)" class="bg-slate-800 hover:bg-brand-600 hover:text-white text-slate-200 text-xs font-mono font-bold py-1.5 rounded-lg border border-slate-700/60 transition text-center" v-html="formatChordHTML(chord)">
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="text-[9px] text-brand-400 uppercase tracking-wider font-bold mb-1">4. Suspendidos (sus2 y sus4) (7)</div>
+                                                <div class="grid grid-cols-4 gap-1">
+                                                    <button v-for="chord in suggestedChordsList.suspended" :key="chord" @click.prevent="insertChordAtCursor(idx, chord)" class="bg-slate-800 hover:bg-brand-600 hover:text-white text-slate-200 text-xs font-mono font-bold py-1.5 rounded-lg border border-slate-700/60 transition text-center" v-html="formatChordHTML(chord)">
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -643,7 +668,6 @@
 
                 const categories = ['Alabanza', 'Adoración', 'Especial', 'Entrada', 'Meditación', 'Ofrenda'];
                 
-                // Lista exacta requerida de todas las tonalidades principales (mayores y menores con sostenidos y bemoles)
                 const chromaticKeys = [
                     'C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'G#', 'Ab', 'A#', 'Bb', 'B',
                     'Cm', 'C#m', 'Dbm', 'Dm', 'D#m', 'Ebm', 'Em', 'Fm', 'F#m', 'Gbm', 'Gm', 'G#m', 'Abm', 'A#m', 'Bbm', 'Bm'
@@ -688,24 +712,7 @@
                 const builderSections = ref([]);
 
                 const activeAutocompleteIdx = ref(null);
-                const suggestedChordsList = ref([
-                    'C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'G#', 'Ab', 'A#', 'Bb', 'B',
-                    'Cm', 'C#m', 'Dm', 'D#m', 'Ebm', 'Em', 'Fm', 'F#m', 'Gm', 'G#m', 'Am', 'A#m', 'Bbm', 'Bm',
-                    'C7', 'D7', 'E7', 'F7', 'G7', 'A7', 'B7', 'G/B', 'F/A', 'C/E'
-                ]);
 
-                const showAddSongModal = ref(false);
-                const addSongSearchQuery = ref('');
-
-                const isAutoScrolling = ref(false);
-                const scrollSpeed = ref(2);
-                let scrollInterval = null;
-
-                const isMetronomeActive = ref(false);
-                let audioCtx = null;
-                let metronomeTimer = null;
-
-                // Mapeo semitonal de 12 notas estándar
                 const scaleBaseSharp = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
                 const scaleBaseFlat  = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
                 
@@ -735,10 +742,8 @@
                     setTimeout(() => toastMessage.value = '', 3000);
                 }
 
-                // Función clave para formatear texto de acordes reemplazando # por ♯ y b por ♭ con tipografía musical
                 function formatChordHTML(chordStr) {
                     if (!chordStr) return '';
-                    // Reemplazamos # por símbolo musical sostenido ♯ y b por símbolo musical bemol ♭ (evitando bemoles en medio de palabras si aplica)
                     let formatted = chordStr
                         .replace(/#/g, '<span class="music-accidental-sharp">♯</span>')
                         .replace(/b(?=[0-9mjsdimsus\/]|$)/g, '<span class="music-accidental-flat">♭</span>')
@@ -864,7 +869,6 @@
 
                 function transposeChordString(chord, semitones) {
                     if (!chord || semitones === 0) return chord;
-                    // Soporta acordes con barras de bajo (Ej. G/B)
                     return chord.replace(/([A-G][b#]?)/g, (match) => {
                         let isFlat = match.includes('b');
                         let scale = isFlat ? scaleBaseFlat : scaleBaseSharp;
@@ -899,6 +903,67 @@
                         showToast(`Acordes transportados automáticamente a ${newKey}`);
                     }
                 }
+
+                const suggestedChordsList = computed(() => {
+                    const keyStr = editingSong.value.key || 'C';
+                    const isMinor = keyStr.endsWith('m') && !keyStr.endsWith('dim');
+                    let rootPart = isMinor ? keyStr.substring(0, keyStr.length - 1) : keyStr;
+
+                    let parsed = getRootNoteAndModifier(rootPart);
+                    let useFlats = parsed.root.includes('b') || ['F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb'].includes(parsed.root);
+                    let scale = useFlats ? scaleBaseFlat : scaleBaseSharp;
+                    
+                    let rootIdx = scale.indexOf(parsed.root);
+                    if (rootIdx === -1) {
+                        rootIdx = scaleBaseSharp.indexOf(parsed.root);
+                        scale = scaleBaseSharp;
+                    }
+                    if (rootIdx === -1) rootIdx = 0;
+
+                    // Patrones de grados diatónicos para mayor y menor natural
+                    let intervals = isMinor 
+                        ? [0, 2, 3, 5, 7, 8, 10] // Menor natural: W H W W H W W
+                        : [0, 2, 4, 5, 7, 9, 11]; // Mayor: W W H W W W H
+
+                    let noteNames = intervals.map(semitones => scale[(rootIdx + semitones) % 12]);
+
+                    // 1. Acordes diatónicos naturales (7 grados)
+                    let naturalQualities = isMinor 
+                        ? ['m', 'dim', '', 'm', 'm', '', ''] 
+                        : ['', 'm', 'm', '', '', 'm', 'dim'];
+                    
+                    let natural = noteNames.map((note, idx) => note + naturalQualities[idx]);
+
+                    // 2. Acordes con séptima (7 grados)
+                    let seventhQualities = isMinor 
+                        ? ['m7', 'm7b5', 'maj7', 'm7', 'm7', 'maj7', '7'] 
+                        : ['maj7', 'm7', 'm7', 'maj7', '7', 'm7', 'm7b5'];
+                    
+                    let seventh = noteNames.map((note, idx) => note + seventhQualities[idx]);
+
+                    // 3. Acordes con novena (7 grados)
+                    let ninthQualities = isMinor 
+                        ? ['m9', 'm9', 'maj9', 'm9', 'm9', 'maj9', '9'] 
+                        : ['maj9', 'm9', 'm9', 'maj9', '9', 'm9', 'm9'];
+                    
+                    let ninth = noteNames.map((note, idx) => note + ninthQualities[idx]);
+
+                    // 4. Acordes suspendidos (sus2 y sus4 para cada uno de los 7 grados)
+                    let suspended = [];
+                    noteNames.forEach(note => {
+                        suspended.push(note + 'sus2');
+                        suspended.push(note + 'sus4');
+                    });
+                    // Rellenar hasta 7 elementos si es necesario o filtrar
+                    suspended = suspended.slice(0, 7);
+
+                    return {
+                        natural,
+                        seventh,
+                        ninth,
+                        suspended
+                    };
+                });
 
                 async function saveSong() {
                     if (!editingSong.value.title) return showToast("El título es obligatorio");
@@ -1206,7 +1271,6 @@
                     if (!activeSong.value) return 'C';
                     const originalKey = activeSong.value.key || 'C';
                     
-                    // Si el tono tiene 'm' menor, lo separamos para transportar la raíz y reanexar la 'm'
                     let isMinor = originalKey.endsWith('m') && !originalKey.endsWith('dim');
                     let rootPart = isMinor ? originalKey.substring(0, originalKey.length - 1) : originalKey;
 
