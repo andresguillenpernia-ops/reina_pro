@@ -803,7 +803,9 @@
 
                     onSnapshot(songsRef, (snapshot) => {
                         const loadedSongs = [];
-                        snapshot.forEach(doc => loadedSongs.data() && loadedSongs.push(doc.data()));
+                        snapshot.forEach(doc => {
+                            if (doc.exists()) loadedSongs.push(doc.data());
+                        });
                         
                         if (snapshot.empty && isFirstLoad) {
                             defaultSongs.forEach(s => {
@@ -823,7 +825,9 @@
 
                     onSnapshot(setlistsRef, (snapshot) => {
                         const loadedSetlists = [];
-                        snapshot.forEach(doc => doc.data() && loadedSetlists.push(doc.data()));
+                        snapshot.forEach(doc => {
+                            if (doc.exists()) loadedSetlists.push(doc.data());
+                        });
                         setlists.value = loadedSetlists;
                     }, (error) => console.error("Error on setlists snapshot", error));
                 }
