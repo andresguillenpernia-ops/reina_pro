@@ -1044,13 +1044,19 @@
 
                     const newVal = val.substring(0, start) + chordInsert + val.substring(end);
                     
+                    // 1. Calculamos la posición exacta final antes de aplicar el cambio
+                    const newCursorPos = start + chordInsert.length;
+
+                    // 2. Actualizamos el valor reactivo en el modelo de Vue
                     builderSections.value[idx].content = newVal;
                     activeAutocompleteIdx.value = null;
 
+                    // 3. Forzamos el foco y la posición del cursor asegurando que Vue ya actualizó el DOM
                     nextTick(() => {
-                        textarea.focus();
-                        const newCursorPos = start + chordInsert.length;
-                        textarea.setSelectionRange(newCursorPos, newCursorPos);
+                        setTimeout(() => {
+                            textarea.focus();
+                            textarea.setSelectionRange(newCursorPos, newCursorPos);
+                        }, 10);
                     });
                 }
 
