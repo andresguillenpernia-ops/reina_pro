@@ -762,7 +762,9 @@
 
                 function formatChordHTML(chordStr) {
                     if (!chordStr) return '';
-                    let formatted = chordStr
+                    // Convertimos la nota raíz a mayúscula antes de formatear los accidentes
+                    let upperChord = chordStr.charAt(0).toUpperCase() + chordStr.slice(1);
+                    let formatted = upperChord
                         .replace(/#/g, '<span class="music-accidental-sharp">♯</span>')
                         .replace(/b(?=[0-9mjsdimsus\/]|$)/g, '<span class="music-accidental-flat">♭</span>')
                         .replace(/b([a-zA-Z])/g, '<span class="music-accidental-flat">♭</span>$1');
