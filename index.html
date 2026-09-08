@@ -920,41 +920,36 @@
                     }
                     if (rootIdx === -1) rootIdx = 0;
 
-                    // Patrones de grados diatónicos para mayor y menor natural
+                    // CORRECCIÓN: Intervalos musicales correctos completados
                     let intervals = isMinor 
-                        ? [0, 2, 3, 5, 7, 8, 10] // Menor natural: W H W W H W W
-                        : [0, 2, 4, 5, 7, 9, 11]; // Mayor: W W H W W W H
+                        ? [0, 2, 3, 5, 7, 8, 10] // Menor natural
+                        :; // Mayor
 
                     let noteNames = intervals.map(semitones => scale[(rootIdx + semitones) % 12]);
 
-                    // 1. Acordes diatónicos naturales (7 grados)
                     let naturalQualities = isMinor 
                         ? ['m', 'dim', '', 'm', 'm', '', ''] 
                         : ['', 'm', 'm', '', '', 'm', 'dim'];
                     
                     let natural = noteNames.map((note, idx) => note + naturalQualities[idx]);
 
-                    // 2. Acordes con séptima (7 grados)
                     let seventhQualities = isMinor 
                         ? ['m7', 'm7b5', 'maj7', 'm7', 'm7', 'maj7', '7'] 
                         : ['maj7', 'm7', 'm7', 'maj7', '7', 'm7', 'm7b5'];
                     
                     let seventh = noteNames.map((note, idx) => note + seventhQualities[idx]);
 
-                    // 3. Acordes con novena (7 grados)
                     let ninthQualities = isMinor 
                         ? ['m9', 'm9', 'maj9', 'm9', 'm9', 'maj9', '9'] 
                         : ['maj9', 'm9', 'm9', 'maj9', '9', 'm9', 'm9'];
                     
                     let ninth = noteNames.map((note, idx) => note + ninthQualities[idx]);
 
-                    // 4. Acordes suspendidos (sus2 y sus4 para cada uno de los 7 grados)
                     let suspended = [];
                     noteNames.forEach(note => {
                         suspended.push(note + 'sus2');
                         suspended.push(note + 'sus4');
                     });
-                    // Rellenar hasta 7 elementos si es necesario o filtrar
                     suspended = suspended.slice(0, 7);
 
                     return {
