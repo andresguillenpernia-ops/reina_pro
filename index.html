@@ -923,7 +923,7 @@
                     // CORRECCIÓN: Intervalos musicales correctos completados
                     let intervals = isMinor 
                         ? [0, 2, 3, 5, 7, 8, 10] // Menor natural
-                        : [0, 2, 4, 5, 7, 9, 11]; // Mayor
+                        :; // Mayor
 
                     let noteNames = intervals.map(semitones => scale[(rootIdx + semitones) % 12]);
 
