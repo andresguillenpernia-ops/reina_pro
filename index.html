@@ -905,7 +905,7 @@
                     }
                 }
 
-                const suggestedChordsList = computed(() => {
+                suggestedChordsList.value = computed(() => {
                     const keyStr = editingSong.value.key || 'C';
                     const isMinor = keyStr.endsWith('m') && !keyStr.endsWith('dim');
                     let rootPart = isMinor ? keyStr.substring(0, keyStr.length - 1) : keyStr;
